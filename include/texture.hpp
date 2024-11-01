@@ -7,7 +7,7 @@
 /* Renders textures stored on GPU (faster to blit than surfaces stored on CPU memory) */
 class Texture {
 public:
-  Texture(const std::string& path_image, SDL_Renderer* renderer);
+  Texture(const std::string& path_image, const SDL_Point& size, SDL_Renderer* renderer);
   Texture(TTF_Font* font, const std::string& text, SDL_Renderer* renderer);
 
   int get_width();
@@ -15,7 +15,7 @@ public:
 
   void set_from_text(TTF_Font* font, const std::string& text);
 
-  void render(const SDL_Point& position);
+  void render(const SDL_Point& position, const SDL_Point& position_clip={ 0, 0 });
   void free();
 
 private:

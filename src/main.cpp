@@ -25,12 +25,8 @@ int main() {
   SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
   SDL_SetRenderDrawColor(renderer, 0xff, 0x00, 0x00, 0xff);
 
-  // const std::string path_image = "./car.png";
-  const std::string path_image = "./wolf.png";
-  Texture texture_image(path_image, renderer);
-
   // player
-  Player player(texture_image);
+  Player player(renderer);
 
   // load font
   const std::string path_font = "/usr/share/fonts/noto/NotoSerif-Regular.ttf";
@@ -58,6 +54,7 @@ int main() {
   SDL_UpdateWindowSurface(window);
   */
 
+  int frame = 0;
   bool quit = false;
 
   while (!quit) {
@@ -79,7 +76,7 @@ int main() {
     // clear window & draw textures
     SDL_RenderClear(renderer);
 
-    player.render();
+    player.render(frame);
 
     SDL_Point position_text = {
       SCREEN_WIDTH / 2 - texture_text.get_width() / 2,
@@ -88,11 +85,12 @@ int main() {
     texture_text.render(position_text);
 
     SDL_RenderPresent(renderer);
+    frame++;
   }
 
   // SDL_FreeSurface(image_surface);
 
-  texture_image.free();
+  player.free();
   texture_text.free();
 
   TTF_CloseFont(font);
