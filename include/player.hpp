@@ -17,7 +17,7 @@ private:
 
   static const int WIDTH = 48;
   static const int HEIGHT = 64;
-  static const int SPEED = 10;
+  static const int SPEED = 5;
   static const int N_FRAMES = 3;
 
   using Frames = std::array<SDL_Point, N_FRAMES>;
@@ -28,7 +28,7 @@ private:
 public:
   Player(SDL_Renderer* renderer);
   void calculate_positions_clips();
-  void handle_event(const SDL_Event* e);
+  void handle_event(const Uint8* key_states);
   void render(int frame);
   void free();
 };

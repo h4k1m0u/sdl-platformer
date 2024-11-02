@@ -3,11 +3,9 @@
 
 #include "player.hpp"
 #include "fps.hpp"
+#include "constants.hpp"
 
 int main() {
-  const int SCREEN_WIDTH = 640;
-  const int SCREEN_HEIGHT = 480;
-
   // SDL2
   if (SDL_Init(SDL_INIT_VIDEO) < 0) {
     std::cout << "Error init. sdl2: " << SDL_GetError() << '\n';
@@ -20,7 +18,7 @@ int main() {
   // fonts loadnig with sdl2_ttf
   TTF_Init();
 
-  SDL_Window* window = SDL_CreateWindow("Window title", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
+  SDL_Window* window = SDL_CreateWindow("Window title", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, Constants::SCREEN_WIDTH, Constants::SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
 
   // SDL_RENDERER_ACCELERATED: render textures stored on GPU (faster to blit than surfaces stored on CPU memory)
   // SDL_RENDERER_PRESENTVSYNC: sync'ed with screen refresh rate (otherwise fps > 1000)
@@ -36,8 +34,7 @@ int main() {
   TTF_Font* font = TTF_OpenFont(path_font.c_str(), FONT_SIZE);
 
   // fps text
-  SDL_Point position_text = { SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 };
-  FPS fps(position_text, font, renderer);
+  FPS fps(font, renderer);
 
   int frame = 0;
   bool quit = false;
@@ -47,11 +44,12 @@ int main() {
     // process even queue once every frame
     SDL_Event e;
     while (SDL_PollEvent(&e)) {
-      if (e.type == SDL_QUIT)
+      if (e.type == SDL_QUIT || (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE))
         quit = true;
-      else
-        player.handle_event(&e);
     }
+
+    const Uint8* keys_states = SDL_GetKeyboardState(NULL);
+    player.handle_event(keys_states);
 
     // recalculate fps
     if (frame % 10 == 0) {

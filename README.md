@@ -1,8 +1,18 @@
 # How to build
 ```bash
-$ pacman -Sy bear
+$ make -j
+```
 
-# build & generate compile_commands.json for ycm linter
+# Dependencies
+```bash
+$ pacman -Sy sdl2 sdl2_image sdl2_ttf
+```
+
+# Bear
+Bear is used to build project & generate `compile_commands.json` for YCM linter:
+
+```bash
+$ pacman -Sy bear
 $ bear -- make -j
 ```
 

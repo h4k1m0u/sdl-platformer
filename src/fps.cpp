@@ -1,10 +1,10 @@
 #include "fps.hpp"
+#include "constants.hpp"
 
 /**
  * @param position Position of texture's center
  */
-FPS::FPS(const SDL_Point& position, TTF_Font* font, SDL_Renderer* renderer):
-  m_position(position),
+FPS::FPS(TTF_Font* font, SDL_Renderer* renderer):
   m_font(font),
   m_texture(font, "FPS: ", renderer),
   m_start_ticks(0)
@@ -27,8 +27,8 @@ void FPS::calculate(int frame) {
 
 void FPS::render() {
     SDL_Point position_text = {
-      m_position.x - m_texture.get_width() / 2,
-      m_position.y - m_texture.get_height() / 2
+      Constants::SCREEN_WIDTH / 2 - m_texture.get_width() / 2,
+      Constants::SCREEN_HEIGHT / 2 - m_texture.get_height() / 2
     };
     m_texture.render(position_text);
 }
