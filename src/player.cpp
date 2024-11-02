@@ -6,7 +6,7 @@ Player::Player(SDL_Renderer* renderer):
   m_position({ 0, 0 }),
   m_position_clip({ 0, 0 }),
   m_velocity({ 0, 0 }),
-  m_direction(Direction::UP)
+  m_direction(Direction::NONE)
 {
   calculate_positions_clips();
 }
@@ -30,6 +30,7 @@ void Player::calculate_positions_clips() {
 
 void Player::handle_event(const SDL_Event* e) {
   if (e->type == SDL_KEYUP) {
+      m_direction = Direction::NONE;
       m_velocity = { 0, 0 };
   }
   else if (e->type == SDL_KEYDOWN) {
@@ -58,10 +59,13 @@ void Player::handle_event(const SDL_Event* e) {
  * @param frame Determines where to clip texture
  */
 void Player::render(int frame) {
-  // slow down animation
-  // int frame_player = (frame / (3 * 2)) % N_FRAMES;
-  int frame_player = frame % N_FRAMES;
-  m_position_clip = m_positions_clips[m_direction][frame_player];
+  if (m_direction != Direction::NONE) {
+    // slow down animation (change image every 6 frames)
+    // int frame_player = frame % N_FRAMES;
+    int frame_player = (frame / (N_FRAMES * 2)) % N_FRAMES;
+    m_position_clip = m_positions_clips[m_direction][frame_player];
+  }
+
   m_texture.render(m_position, m_position_clip);
 }
 
