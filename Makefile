@@ -11,7 +11,7 @@ OBJECTS := $(SRC_FILES:$(SRC_DIR)/%.cpp=$(BUILD_DIR)/%.o)
 
 CPPFLAGS := -I$(INCLUDE_DIR)
 CXXFLAGS := -std=c++20 -Wall -Wextra -Werror
-LDFLAGS := -lSDL2 -lSDL2_image -lSDL2_ttf
+LDFLAGS := -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer
 
 # separate compilation from linking to recompile only modified file
 $(BUILD_DIR)/main: $(OBJECTS)

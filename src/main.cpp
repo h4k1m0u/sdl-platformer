@@ -1,5 +1,6 @@
 #include <iostream>
 #include <SDL2/SDL_image.h>
+#include <SDL2/SDL_mixer.h>
 
 #include "player.hpp"
 #include "fps.hpp"
@@ -7,7 +8,7 @@
 
 int main() {
   // SDL2
-  if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+  if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) {
     std::cout << "Error init. sdl2: " << SDL_GetError() << '\n';
     return 1;
   }
@@ -33,6 +34,21 @@ int main() {
   const int FONT_SIZE = 24;
   TTF_Font* font = TTF_OpenFont(path_font.c_str(), FONT_SIZE);
 
+  // load music & sounds
+  Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048);
+
+  std::string path_music = "./caketown.mp3";
+  Mix_Music* music = Mix_LoadMUS(path_music.c_str());
+  Mix_PlayMusic(music, -1);
+
+  std::string path_sound = "./sound.wav";
+  Mix_Chunk* sound = Mix_LoadWAV(path_sound.c_str());
+
+  if (music == NULL || sound == NULL) {
+    std::cout << "Error loading music file: " << Mix_GetError() << '\n';
+    return 1;
+  }
+
   // fps text
   FPS fps(font, renderer);
 
@@ -46,6 +62,8 @@ int main() {
     while (SDL_PollEvent(&e)) {
       if (e.type == SDL_QUIT || (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE))
         quit = true;
+      else if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_SPACE) 
+        Mix_PlayChannel(-1, sound, 0);
     }
 
     const Uint8* keys_states = SDL_GetKeyboardState(NULL);
@@ -66,6 +84,10 @@ int main() {
     frame++;
   }
 
+  Mix_FreeMusic(music);
+  Mix_FreeChunk(sound);
+  Mix_CloseAudio();
+
   player.free();
   fps.free();
 
@@ -74,6 +96,7 @@ int main() {
   SDL_DestroyRenderer(renderer);
   SDL_DestroyWindow(window);
 
+  Mix_Quit();
   TTF_Quit();
   IMG_Quit();
   SDL_Quit();

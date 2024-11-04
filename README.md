@@ -5,7 +5,7 @@ $ make -j
 
 # Dependencies
 ```bash
-$ pacman -Sy sdl2 sdl2_image sdl2_ttf
+$ pacman -Sy sdl2 sdl2_image sdl2_ttf sdl2_mixer
 ```
 
 # Bear
