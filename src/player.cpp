@@ -3,13 +3,15 @@
 #include "player.hpp"
 #include "constants.hpp"
 #include "direction.hpp"
+#include "collision.hpp"
 
 Player::Player(SDL_Renderer* renderer):
   m_texture("./werewolf-NESW.png", { WIDTH, HEIGHT }, renderer),
   m_position({ 0, 0 }),
   m_position_clip({ 0, 0 }),
   m_velocity({ 0, 0 }),
-  m_direction(Direction::NONE)
+  m_direction(Direction::NONE),
+  m_bbox({ m_position.x, m_position.y, WIDTH, HEIGHT })
 {
   calculate_positions_clips();
 }
@@ -35,7 +37,7 @@ void Player::calculate_positions_clips() {
  * Smoother results with keystates: move as long as key pressed (like joystick)
  * SDL_KEYDOWN/UP better for puncutual events like firing a bullet (typing keyboard)
  */
-void Player::handle_event(const Uint8* key_states) {
+void Player::handle_event(const Uint8* key_states, const Obstacle& obstacle) {
   if (key_states[SDL_SCANCODE_UP]) {
     m_direction = Direction::UP;
     m_velocity = { 0, -SPEED };
@@ -56,11 +58,19 @@ void Player::handle_event(const Uint8* key_states) {
     m_velocity = { 0, 0 };
   }
 
-  // m_position = { m_position.x + m_velocity.x, m_position.y + m_velocity.y };
+  // confine within screen & update bbox
+  int x_new = std::clamp(m_position.x + m_velocity.x, 0, Constants::SCREEN_WIDTH - WIDTH);
+  int y_new = std::clamp(m_position.y + m_velocity.y, 0, Constants::SCREEN_HEIGHT - HEIGHT);
 
-  // confine within screen
-  m_position.x = std::clamp(m_position.x + m_velocity.x, 0, Constants::SCREEN_WIDTH - WIDTH);
-  m_position.y = std::clamp(m_position.y + m_velocity.y, 0, Constants::SCREEN_HEIGHT - HEIGHT);
+  // move only if no collision detected
+  SDL_Rect bbox_player_new = { x_new, y_new, WIDTH, HEIGHT };
+  SDL_Rect bbox_obstacle = obstacle.get_bbox();
+  bool collides = Collision::rect_to_rect(bbox_player_new, bbox_obstacle);
+
+  if (!collides) {
+    m_bbox.x = m_position.x = x_new;
+    m_bbox.y = m_position.y = y_new;
+  }
 }
 
 /**

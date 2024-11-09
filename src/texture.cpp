@@ -31,11 +31,11 @@ void Texture::set_from_text(TTF_Font* font, const std::string& text) {
   SDL_FreeSurface(surface);
 }
 
-int Texture::get_width() {
+int Texture::get_width() const {
   return m_width;
 }
 
-int Texture::get_height() {
+int Texture::get_height() const {
   return m_height;
 }
 

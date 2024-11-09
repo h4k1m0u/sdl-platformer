@@ -24,10 +24,13 @@ int main() {
   // SDL_RENDERER_ACCELERATED: render textures stored on GPU (faster to blit than surfaces stored on CPU memory)
   // SDL_RENDERER_PRESENTVSYNC: sync'ed with screen refresh rate (otherwise fps > 1000)
   SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-  SDL_SetRenderDrawColor(renderer, 0xff, 0x00, 0x00, 0xff);
 
   // player
   Player player(renderer);
+
+  // walls & grounds
+  SDL_Point position_obstacle = { 200, 0 };
+  Obstacle obstacle(renderer, position_obstacle);
 
   // load font
   const std::string path_font = "/usr/share/fonts/noto/NotoSerif-Regular.ttf";
@@ -39,7 +42,7 @@ int main() {
 
   std::string path_music = "./caketown.mp3";
   Mix_Music* music = Mix_LoadMUS(path_music.c_str());
-  Mix_PlayMusic(music, -1);
+  // Mix_PlayMusic(music, -1);
 
   std::string path_sound = "./sound.wav";
   Mix_Chunk* sound = Mix_LoadWAV(path_sound.c_str());
@@ -62,12 +65,12 @@ int main() {
     while (SDL_PollEvent(&e)) {
       if (e.type == SDL_QUIT || (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE))
         quit = true;
-      else if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_SPACE) 
+      else if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_SPACE)
         Mix_PlayChannel(-1, sound, 0);
     }
 
     const Uint8* keys_states = SDL_GetKeyboardState(NULL);
-    player.handle_event(keys_states);
+    player.handle_event(keys_states, obstacle);
 
     // recalculate fps
     if (frame % 10 == 0) {
@@ -75,7 +78,11 @@ int main() {
     }
 
     // clear window & draw textures
+    SDL_SetRenderDrawColor(renderer, 0xff, 0x00, 0x00, 0xff);
     SDL_RenderClear(renderer);
+
+    obstacle.render();
+    // for multiple rects: SDL_RenderFillRects
 
     player.render(frame);
     fps.render();

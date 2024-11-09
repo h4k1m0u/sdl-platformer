@@ -10,8 +10,8 @@ public:
   Texture(const std::string& path_image, const SDL_Point& size, SDL_Renderer* renderer);
   Texture(TTF_Font* font, const std::string& text, SDL_Renderer* renderer);
 
-  int get_width();
-  int get_height();
+  int get_width() const;
+  int get_height() const;
 
   void set_from_text(TTF_Font* font, const std::string& text);
 

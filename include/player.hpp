@@ -6,6 +6,7 @@
 
 #include "texture.hpp"
 #include "direction.hpp"
+#include "obstacle.hpp"
 
 class Player {
 private:
@@ -25,10 +26,13 @@ private:
 
   Clips m_positions_clips;
 
+  SDL_Rect m_bbox;
+
+  void calculate_positions_clips();
+
 public:
   Player(SDL_Renderer* renderer);
-  void calculate_positions_clips();
-  void handle_event(const Uint8* key_states);
+  void handle_event(const Uint8* key_states, const Obstacle& obstacle);
   void render(int frame);
   void free();
 };
