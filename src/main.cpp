@@ -40,11 +40,11 @@ int main() {
   // load music & sounds
   Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048);
 
-  std::string path_music = "./caketown.mp3";
+  std::string path_music = "./assets/caketown.mp3";
   Mix_Music* music = Mix_LoadMUS(path_music.c_str());
   // Mix_PlayMusic(music, -1);
 
-  std::string path_sound = "./sound.wav";
+  std::string path_sound = "./assets/sound.wav";
   Mix_Chunk* sound = Mix_LoadWAV(path_sound.c_str());
 
   if (music == NULL || sound == NULL) {

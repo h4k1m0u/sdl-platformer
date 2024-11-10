@@ -1,6 +1,7 @@
 # How to build
 ```bash
-$ make -j
+$ make -j  # build the executable
+$ make build/assets  # copy the assets
 ```
 
 # Dependencies

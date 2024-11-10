@@ -6,7 +6,7 @@
 #include "collision.hpp"
 
 Player::Player(SDL_Renderer* renderer):
-  m_texture("./werewolf-NESW.png", { WIDTH, HEIGHT }, renderer),
+  m_texture("./assets/werewolf-NESW.png", { WIDTH, HEIGHT }, renderer),
   m_position({ 0, 0 }),
   m_position_clip({ 0, 0 }),
   m_velocity({ 0, 0 }),
