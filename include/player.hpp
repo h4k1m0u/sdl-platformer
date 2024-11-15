@@ -3,17 +3,17 @@
 
 #include <unordered_map>
 #include <array>
+#include <vector>
 
 #include "texture.hpp"
 #include "direction.hpp"
-#include "obstacle.hpp"
 
 class Player {
 private:
   const std::string PATH_TEXTURE = "./assets/werewolf-NESW.png";
   const int WIDTH = 48;
   const int HEIGHT = 64;
-  const int SPEED = 5;
+  const int SPEED = 4;
   static const int N_FRAMES = 3;
 
   Texture m_texture;
@@ -33,7 +33,7 @@ private:
 
 public:
   Player(SDL_Renderer* renderer);
-  void handle_event(const Uint8* key_states, const Obstacle& obstacle);
+  void handle_event(const Uint8* key_states, const std::vector<SDL_Rect>& bboxes_obstacles);
   void render(int frame);
   void free();
 };

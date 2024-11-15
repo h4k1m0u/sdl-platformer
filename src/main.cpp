@@ -20,7 +20,7 @@ int main() {
   // fonts loadnig with sdl2_ttf
   TTF_Init();
 
-  SDL_Window* window = SDL_CreateWindow("Window title", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, Constants::SCREEN_WIDTH, Constants::SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
+  SDL_Window* window = SDL_CreateWindow("Platformer", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, Constants::SCREEN_WIDTH, Constants::SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
 
   // SDL_RENDERER_ACCELERATED: render textures stored on GPU (faster to blit than surfaces stored on CPU memory)
   // SDL_RENDERER_PRESENTVSYNC: sync'ed with screen refresh rate (otherwise fps > 1000)
@@ -29,12 +29,9 @@ int main() {
   // player
   Player player(renderer);
 
-  // walls & grounds
-  SDL_Point position_obstacle = { 200, 0 };
-  Obstacle obstacle(renderer, position_obstacle);
-
   // tilemap
   Tilemap tilemap(renderer);
+  std::vector<SDL_Rect> bboxes_obstacles = tilemap.get_bboxes();
 
   // load font
   const std::string path_font = "/usr/share/fonts/noto/NotoSerif-Regular.ttf";
@@ -74,7 +71,7 @@ int main() {
     }
 
     const Uint8* keys_states = SDL_GetKeyboardState(NULL);
-    player.handle_event(keys_states, obstacle);
+    player.handle_event(keys_states, bboxes_obstacles);
 
     // recalculate fps
     if (frame % 10 == 0) {
@@ -87,8 +84,6 @@ int main() {
     SDL_RenderClear(renderer);
 
     tilemap.render();
-    obstacle.render(); // for multiple rects: SDL_RenderFillRects
-
     player.render(frame);
     fps.render();
 

@@ -13,3 +13,12 @@ bool Collision::rect_to_rect(const SDL_Rect& rect1, const SDL_Rect& rect2) {
 
   return collides_x && collides_y;
 }
+
+bool Collision::rect_to_rects(const SDL_Rect& rect, const std::vector<SDL_Rect>& rects) {
+  for (const SDL_Rect& rect_other : rects) {
+    if (rect_to_rect(rect, rect_other))
+      return true;
+  }
+
+  return false;
+}

@@ -9,6 +9,17 @@ $ make build/assets  # copy the assets
 $ pacman -Sy sdl2 sdl2_image sdl2_ttf sdl2_mixer
 ```
 
+# Assets
+- [Werewolf sprite][player-sprite]
+- [Music][music]
+- [Sound][sound]
+- [Tiles][tiles]
+
+[player-sprite]: https://opengameart.org/content/werewolf-lpc
+[music]: https://opengameart.org/content/caketown-cuteplayful
+[sound]: https://opengameart.org/content/foot-walking-step-sounds-on-stone-water-snow-wood-and-dirt
+[tiles]: https://opengameart.org/content/simple-platformer-tileset
+
 # Bear
 Bear is used to build project & generate `compile_commands.json` for YCM linter:
 
@@ -18,6 +29,8 @@ $ bear -- make -j
 ```
 
 # References
-[lazyfoo SDL tutorials][1]
+- [lazyfoo SDL tutorials][lazyfoo]
+- [SDL2 documentation][sdl2-docs]
 
-[1]: https://lazyfoo.net/tutorials/SDL/index.php
+[lazyfoo]: https://lazyfoo.net/tutorials/SDL/index.php
+[sdl2-docs]: https://wiki.libsdl.org/SDL2/CategoryAPI

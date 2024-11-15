@@ -7,7 +7,7 @@
 
 Player::Player(SDL_Renderer* renderer):
   m_texture(PATH_TEXTURE, { WIDTH, HEIGHT }, renderer),
-  m_position({ 0, 0 }),
+  m_position({ 100, 100 }),
   m_position_clip({ 0, 0 }),
   m_velocity({ 0, 0 }),
   m_direction(Direction::NONE),
@@ -37,7 +37,7 @@ void Player::calculate_positions_clips() {
  * Smoother results with keystates: move as long as key pressed (like joystick)
  * SDL_KEYDOWN/UP better for puncutual events like firing a bullet (typing keyboard)
  */
-void Player::handle_event(const Uint8* key_states, const Obstacle& obstacle) {
+void Player::handle_event(const Uint8* key_states, const std::vector<SDL_Rect>& bboxes_obstacles) {
   if (key_states[SDL_SCANCODE_UP]) {
     m_direction = Direction::UP;
     m_velocity = { 0, -SPEED };
@@ -64,8 +64,7 @@ void Player::handle_event(const Uint8* key_states, const Obstacle& obstacle) {
 
   // move only if no collision detected
   SDL_Rect bbox_player_new = { x_new, y_new, WIDTH, HEIGHT };
-  SDL_Rect bbox_obstacle = obstacle.get_bbox();
-  bool collides = Collision::rect_to_rect(bbox_player_new, bbox_obstacle);
+  bool collides = Collision::rect_to_rects(bbox_player_new, bboxes_obstacles);
 
   if (!collides) {
     m_bbox.x = m_position.x = x_new;

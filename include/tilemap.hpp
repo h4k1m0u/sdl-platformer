@@ -10,6 +10,7 @@
 class Tilemap {
 public:
   Tilemap(SDL_Renderer* renderer);
+  std::vector<SDL_Rect> get_bboxes() const;
   void render();
   void free();
 
@@ -19,7 +20,7 @@ private:
   const int WIDTH_TILE = 32;
   const int HEIGHT_TILE = 32;
 
-  enum TILE_TYPE : char {
+  enum class TILE_TYPE : char {
     ROCK = 'R',
     GRASS = 'G',
     STONE = 'S',
@@ -27,15 +28,15 @@ private:
   };
 
   const std::unordered_map<TILE_TYPE, SDL_Point> POSITIONS_CLIPS = {
-    { ROCK,  { 32, 0 } },
-    { GRASS, { 64, 0 } },
-    { STONE, { 96, 0 } }
+    { TILE_TYPE::ROCK,  { 32, 0 } },
+    { TILE_TYPE::GRASS, { 64, 0 } },
+    { TILE_TYPE::STONE, { 96, 0 } }
   };
 
   Texture m_texture;
-  std::vector<std::vector<char>> m_map;
-  int m_n_rows;
-  int m_n_cols;
+  std::unordered_map<TILE_TYPE, std::vector<SDL_Point>> m_tiles;
+
+  std::vector<SDL_Rect> m_bboxes;
 
   void parse();
 };
