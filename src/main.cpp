@@ -5,6 +5,7 @@
 #include "player.hpp"
 #include "fps.hpp"
 #include "constants.hpp"
+#include "tilemap.hpp"
 
 int main() {
   // SDL2
@@ -31,6 +32,9 @@ int main() {
   // walls & grounds
   SDL_Point position_obstacle = { 200, 0 };
   Obstacle obstacle(renderer, position_obstacle);
+
+  // tilemap
+  Tilemap tilemap(renderer);
 
   // load font
   const std::string path_font = "/usr/share/fonts/noto/NotoSerif-Regular.ttf";
@@ -78,11 +82,12 @@ int main() {
     }
 
     // clear window & draw textures
-    SDL_SetRenderDrawColor(renderer, 0xff, 0x00, 0x00, 0xff);
+    const SDL_Color COLOR_SKY = { 80, 255, 232, 255 };
+    SDL_SetRenderDrawColor(renderer, COLOR_SKY.r, COLOR_SKY.g, COLOR_SKY.b, COLOR_SKY.a);
     SDL_RenderClear(renderer);
 
-    obstacle.render();
-    // for multiple rects: SDL_RenderFillRects
+    tilemap.render();
+    obstacle.render(); // for multiple rects: SDL_RenderFillRects
 
     player.render(frame);
     fps.render();
@@ -95,6 +100,7 @@ int main() {
   Mix_FreeChunk(sound);
   Mix_CloseAudio();
 
+  tilemap.free();
   player.free();
   fps.free();
 

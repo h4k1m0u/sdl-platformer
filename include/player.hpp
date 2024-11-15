@@ -10,16 +10,17 @@
 
 class Player {
 private:
+  const std::string PATH_TEXTURE = "./assets/werewolf-NESW.png";
+  const int WIDTH = 48;
+  const int HEIGHT = 64;
+  const int SPEED = 5;
+  static const int N_FRAMES = 3;
+
   Texture m_texture;
   SDL_Point m_position;
   SDL_Point m_position_clip;
   SDL_Point m_velocity;
   Direction m_direction;
-
-  static const int WIDTH = 48;
-  static const int HEIGHT = 64;
-  static const int SPEED = 5;
-  static const int N_FRAMES = 3;
 
   using Frames = std::array<SDL_Point, N_FRAMES>;
   using Clips = std::unordered_map<Direction, Frames>;
