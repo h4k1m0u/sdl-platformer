@@ -1,3 +1,4 @@
+#include <iostream>
 #include <algorithm>
 
 #include "player.hpp"
@@ -5,11 +6,14 @@
 #include "direction.hpp"
 #include "collision.hpp"
 
-Player::Player(SDL_Renderer* renderer):
+Player::Player(SDL_Renderer* renderer, const std::vector<SDL_Rect>& obstacles):
+  m_obstacles(obstacles),
+
   m_texture(PATH_TEXTURE, { WIDTH, HEIGHT }, renderer),
-  m_position({ 100, 100 }),
+  m_position({ 100, 50 }),
   m_position_clip({ 0, 0 }),
-  m_velocity({ 0, 0 }),
+  m_velocity_x(0),
+  m_velocity_y(0),
   m_direction(Direction::NONE),
   m_bbox({ m_position.x, m_position.y, WIDTH, HEIGHT })
 {
@@ -34,42 +38,76 @@ void Player::calculate_positions_clips() {
 }
 
 /**
+ * Allow horizontal movement only if on ground
  * Smoother results with keystates: move as long as key pressed (like joystick)
  * SDL_KEYDOWN/UP better for puncutual events like firing a bullet (typing keyboard)
  */
-void Player::handle_event(const Uint8* key_states, const std::vector<SDL_Rect>& bboxes_obstacles) {
-  if (key_states[SDL_SCANCODE_UP]) {
-    m_direction = Direction::UP;
-    m_velocity = { 0, -SPEED };
+void Player::handle_event(const Uint8* key_states) {
+  SDL_Point point_contact;
+  bool on_ground = collides_bottom(point_contact);
+
+  if (!on_ground) {
+    fall();
+    return;
   }
-  else if (key_states[SDL_SCANCODE_DOWN]) {
-    m_direction = Direction::DOWN;
-    m_velocity = { 0, SPEED };
-  }
-  else if (key_states[SDL_SCANCODE_LEFT]) {
+
+  m_velocity_y = 0;
+
+  if (key_states[SDL_SCANCODE_LEFT]) {
     m_direction = Direction::LEFT;
-    m_velocity = { -SPEED, 0 };
+    m_velocity_x = -SPEED;
   }
   else if (key_states[SDL_SCANCODE_RIGHT]) {
     m_direction = Direction::RIGHT;
-    m_velocity = { SPEED, 0 };
+    m_velocity_x = SPEED;
   } else {
     m_direction = Direction::NONE;
-    m_velocity = { 0, 0 };
+    m_velocity_x = 0;
   }
+
+  // TODO: should check for collision on left & right! (to re-position player on x-axis)
 
   // confine within screen & update bbox
-  int x_new = std::clamp(m_position.x + m_velocity.x, 0, Constants::SCREEN_WIDTH - WIDTH);
-  int y_new = std::clamp(m_position.y + m_velocity.y, 0, Constants::SCREEN_HEIGHT - HEIGHT);
+  int x_new = std::clamp(m_position.x + m_velocity_x, 0, Constants::SCREEN_WIDTH - WIDTH);
+  m_bbox.x = m_position.x = x_new;
+}
 
-  // move only if no collision detected
-  SDL_Rect bbox_player_new = { x_new, y_new, WIDTH, HEIGHT };
-  bool collides = Collision::rect_to_rects(bbox_player_new, bboxes_obstacles);
+/* Check collision of next position to prevent sprite from penetrating ground */
+bool Player::collides_bottom(SDL_Point& point_contact) {
+  SDL_Rect bbox_new = m_bbox;
+  bbox_new.y += m_velocity_y;
+  const Collision::Side side = Collision::Side::TOP;
 
-  if (!collides) {
-    m_bbox.x = m_position.x = x_new;
-    m_bbox.y = m_position.y = y_new;
-  }
+  return Collision::collides(bbox_new, m_obstacles, side, point_contact);
+}
+
+/**
+ * More realistic fall when velocity affected by gravity
+ * Ease-In (acceleration)
+ */
+void Player::fall() {
+  m_direction = Direction::NONE;
+  m_velocity_y += GRAVITY;
+  std::cout << "m_velocity_y: " << m_velocity_y << '\n';
+
+  SDL_Point point_contact;
+  bool on_ground = collides_bottom(point_contact);
+  std::cout << "on_ground: " << on_ground << " point_contact.y: " << point_contact.y << '\n';
+
+  int y_new = on_ground ? point_contact.y - HEIGHT : m_bbox.y + m_velocity_y;
+  m_bbox.y = m_position.y = y_new;
+}
+
+/**
+ * Strong vertical velocity to resist to gravity (to a certain extent)
+ * Ease-Out (deceleration thanks to gravity in fall())
+ */
+void Player::jump() {
+  std::cout << "--- JUMPING ---" << '\n';
+  m_direction = Direction::NONE;
+  m_velocity_y = -4 * SPEED;
+  int y_new = m_position.y + m_velocity_y;
+  m_bbox.y = m_position.y = y_new;
 }
 
 /**

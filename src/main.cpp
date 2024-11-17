@@ -26,12 +26,12 @@ int main() {
   // SDL_RENDERER_PRESENTVSYNC: sync'ed with screen refresh rate (otherwise fps > 1000)
   SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 
-  // player
-  Player player(renderer);
-
   // tilemap
   Tilemap tilemap(renderer);
-  std::vector<SDL_Rect> bboxes_obstacles = tilemap.get_bboxes();
+  std::vector<SDL_Rect> obstacles = tilemap.get_bboxes();
+
+  // player
+  Player player(renderer, obstacles);
 
   // load font
   const std::string path_font = "/usr/share/fonts/noto/NotoSerif-Regular.ttf";
@@ -66,12 +66,14 @@ int main() {
     while (SDL_PollEvent(&e)) {
       if (e.type == SDL_QUIT || (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE))
         quit = true;
+      else if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_UP)
+        player.jump();
       else if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_SPACE)
         Mix_PlayChannel(-1, sound, 0);
     }
 
     const Uint8* keys_states = SDL_GetKeyboardState(NULL);
-    player.handle_event(keys_states, bboxes_obstacles);
+    player.handle_event(keys_states);
 
     // recalculate fps
     if (frame % 10 == 0) {

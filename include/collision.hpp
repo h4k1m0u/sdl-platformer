@@ -5,8 +5,16 @@
 #include <vector>
 
 namespace Collision {
-  bool rect_to_rect(const SDL_Rect& rect1, const SDL_Rect& rect2);
-  bool rect_to_rects(const SDL_Rect& rect, const std::vector<SDL_Rect>& rects);
+  enum class Side {
+    TOP,
+    BOTTOM,
+    LEFT,
+    RIGHT,
+  };
+
+  SDL_Point rect_to_rect(const SDL_Rect& rect1, const SDL_Rect& rect2);
+  bool collides(const SDL_Rect& rect, const std::vector<SDL_Rect>& rects, Side side, SDL_Point& point_contact);
+  // bool rect_to_rects(const SDL_Rect& rect, const std::vector<SDL_Rect>& rects);
 };
 
 #endif
