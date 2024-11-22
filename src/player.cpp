@@ -53,11 +53,11 @@ void Player::handle_event(const Uint8* key_states) {
 
   m_velocity_y = 0;
 
-  if (key_states[SDL_SCANCODE_LEFT]) {
+  if (key_states[SDL_SCANCODE_LEFT] || key_states[SDL_SCANCODE_A]) {
     m_direction = Direction::LEFT;
     m_velocity_x = -SPEED;
   }
-  else if (key_states[SDL_SCANCODE_RIGHT]) {
+  else if (key_states[SDL_SCANCODE_RIGHT] || key_states[SDL_SCANCODE_D]) {
     m_direction = Direction::RIGHT;
     m_velocity_x = SPEED;
   } else {
@@ -99,7 +99,7 @@ void Player::fall() {
 }
 
 /**
- * Strong vertical velocity to resist to gravity (to a certain extent)
+ * Strong vertical velocity to resist gravity (to a certain extent)
  * Ease-Out (deceleration thanks to gravity in fall())
  */
 void Player::jump() {

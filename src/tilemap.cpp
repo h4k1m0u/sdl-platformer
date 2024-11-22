@@ -16,17 +16,28 @@ void Tilemap::parse() {
 
   while (std::getline(f_tilemap, line)) {
     int n_cols = line.size();
+    int i_col = 0;
 
-    for (int i_col = 0; i_col < n_cols; ++i_col) {
-      char c = line[i_col];
-      TILE_TYPE tile_type = static_cast<TILE_TYPE>(c);
-      if (tile_type == TILE_TYPE::VOID)
+    while (i_col < n_cols) {
+      // ignore void tiles
+      TILE_TYPE tile_type = static_cast<TILE_TYPE>(line[i_col]);
+      if (tile_type == TILE_TYPE::VOID) {
+        i_col++;
         continue;
+      }
 
-      SDL_Point position = { i_col * WIDTH_TILE, i_row * HEIGHT_TILE };
-      m_tiles[tile_type].push_back(position);
+      // count sequence of non-void tiles as single bbox (less bboxes to check collision against)
+      SDL_Point position_sequence = { i_col * WIDTH_TILE, i_row * HEIGHT_TILE };
+      int n_tiles_sequence = 0;
 
-      SDL_Rect bbox = { position.x, position.y, WIDTH_TILE, HEIGHT_TILE };
+      while (i_col < n_cols && static_cast<TILE_TYPE>(line[i_col]) != TILE_TYPE::VOID) {
+        SDL_Point position = { i_col * WIDTH_TILE, i_row * HEIGHT_TILE };
+        m_tiles[tile_type].push_back(position);
+        n_tiles_sequence++;
+        i_col++;
+      }
+
+      SDL_Rect bbox = { position_sequence.x, position_sequence.y, n_tiles_sequence * WIDTH_TILE, HEIGHT_TILE };
       m_bboxes.push_back(bbox);
     }
 

@@ -66,7 +66,7 @@ int main() {
     while (SDL_PollEvent(&e)) {
       if (e.type == SDL_QUIT || (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE))
         quit = true;
-      else if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_UP)
+      else if (e.type == SDL_KEYDOWN && (e.key.keysym.sym == SDLK_UP || e.key.keysym.sym == SDLK_w))
         player.jump();
       else if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_SPACE)
         Mix_PlayChannel(-1, sound, 0);

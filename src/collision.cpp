@@ -18,8 +18,7 @@ SDL_Point Collision::rect_to_rect(const SDL_Rect& rect1, const SDL_Rect& rect2) 
 /**
  * Check if colliding on given side & return contact point (y for TB & x for LR)
  * @pararm side Position of rect rel. to rect_other (e.g. TOP: rect is above rect_other)
- * @return contact_point Needed to re-position sprite on collision
- * (and avoid penetrating tiles)
+ * @return contact_point Needed to re-position sprite on collision (and avoid penetrating tiles)
  */
 bool Collision::collides(const SDL_Rect& rect, const std::vector<SDL_Rect>& rects, Side side, SDL_Point& point_contact) {
   for (const SDL_Rect& rect_other : rects) {
