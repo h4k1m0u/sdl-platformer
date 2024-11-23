@@ -1,8 +1,10 @@
 #include <fstream>
 
 #include "tilemap.hpp"
+#include "constants.hpp"
 
 Tilemap::Tilemap(SDL_Renderer* renderer):
+  m_renderer(renderer),
   m_texture(PATH_TEXTURE, { WIDTH_TILE, HEIGHT_TILE }, renderer)
 {
   parse();
@@ -57,6 +59,13 @@ void Tilemap::render() {
     for (const SDL_Point& position : positions) {
       m_texture.render(position, position_clip);
     }
+  }
+
+  // show bboxes in debug mode
+  if (Constants::DEBUG) {
+    const SDL_Color color = Constants::COLOR_BBOX;
+    SDL_SetRenderDrawColor(m_renderer, color.r, color.g, color.b, color.a);
+    SDL_RenderDrawRects(m_renderer, m_bboxes.data(), m_bboxes.size());
   }
 }
 

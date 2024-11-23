@@ -33,6 +33,7 @@ private:
     { TILE_TYPE::STONE, { 96, 0 } }
   };
 
+  SDL_Renderer* m_renderer;
   Texture m_texture;
   std::unordered_map<TILE_TYPE, std::vector<SDL_Point>> m_tiles;
 

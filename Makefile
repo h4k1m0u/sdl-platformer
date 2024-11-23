@@ -9,6 +9,8 @@ SRC_FILES := $(shell find $(SRC_DIR) -name "*.cpp")
 HEADER_FILES := $(shell find $(INCLUDE_DIR) -name "*.hpp")
 OBJECTS_FILES := $(SRC_FILES:$(SRC_DIR)/%.cpp=$(BUILD_DIR)/%.o)
 
+CONFIG_HPP := $(INCLUDE_DIR)/constants.hpp
+
 ASSETS_SRC_DIR := assets
 ASSETS_DEST_DIR := $(BUILD_DIR)/assets
 ASSETS_SRC_FILES := $(shell find $(ASSETS_SRC_DIR) -mindepth 1)
@@ -26,12 +28,12 @@ $(BUILD_DIR)/main: $(OBJECTS_FILES)
 	$(CXX) $(LDFLAGS) -o$@ $^
 
 # separate translation units to compile them in parallel (faster)
-$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp $(INCLUDE_DIR)/%.hpp
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp $(INCLUDE_DIR)/%.hpp $(CONFIG_HPP)
 	mkdir -p $(BUILD_DIR)
 	$(CXX) -c $(CPPFLAGS) $(CXXFLAGS) -o$@ $<
 
 # most specific rules used for main.cpp, not the above one (no header file)
-$(BUILD_DIR)/main.o: $(SRC_DIR)/main.cpp
+$(BUILD_DIR)/main.o: $(SRC_DIR)/main.cpp $(CONFIG_HPP)
 	mkdir -p $(BUILD_DIR)
 	$(CXX) -c $(CPPFLAGS) $(CXXFLAGS) -o$@ $<
 

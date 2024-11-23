@@ -10,6 +10,7 @@ Player::Player(SDL_Renderer* renderer, const std::vector<SDL_Rect>& obstacles):
   // TODO: no need for this if collision detection made external???
   m_obstacles(obstacles),
 
+  m_renderer(renderer),
   m_texture(PATH_TEXTURE, { WIDTH, HEIGHT }, renderer),
   m_position({ 100, 50 }),
   m_position_clip({ 0, 0 }),
@@ -145,6 +146,13 @@ void Player::render(int frame) {
   }
 
   m_texture.render(m_position, m_position_clip);
+
+  // show bbox in debug mode
+  if (Constants::DEBUG) {
+    const SDL_Color color = Constants::COLOR_BBOX;
+    SDL_SetRenderDrawColor(m_renderer, color.r, color.g, color.b, color.a);
+    SDL_RenderDrawRect(m_renderer, &m_bbox);
+  }
 }
 
 void Player::free() {

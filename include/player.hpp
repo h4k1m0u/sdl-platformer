@@ -22,6 +22,7 @@ private:
   using Clips = std::unordered_map<Direction, Frames>;
 
   std::vector<SDL_Rect> m_obstacles;
+  SDL_Renderer* m_renderer;
   Texture m_texture;
   SDL_Point m_position;
   SDL_Point m_position_clip;
