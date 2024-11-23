@@ -29,6 +29,7 @@ int main() {
   // tilemap
   Tilemap tilemap(renderer);
   std::vector<SDL_Rect> obstacles = tilemap.get_bboxes();
+  std::cout << "# of grounds: " << obstacles.size() << '\n';
 
   // player
   Player player(renderer, obstacles);
@@ -61,19 +62,41 @@ int main() {
   fps.start_timer();
 
   while (!quit) {
+    // physics (collision detection player & ground tiles)
+    SDL_Point point_contact;
+    bool is_on_ground = player.check_collision(Collision::Side::TOP, point_contact);
+
+    std::cout << frame << " main loop(): " << "on_ground: " << is_on_ground << " point_contact.y: " << point_contact.y << '\n';
+
+    if (!is_on_ground) {
+      player.fall();
+    }
+
     // process even queue once every frame
     SDL_Event e;
+    bool jump = false;
+
     while (SDL_PollEvent(&e)) {
       if (e.type == SDL_QUIT || (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE))
         quit = true;
-      else if (e.type == SDL_KEYDOWN && (e.key.keysym.sym == SDLK_UP || e.key.keysym.sym == SDLK_w))
-        player.jump();
+      else if (is_on_ground && e.type == SDL_KEYDOWN && (e.key.keysym.sym == SDLK_UP || e.key.keysym.sym == SDLK_w))
+        jump = true;
       else if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_SPACE)
         Mix_PlayChannel(-1, sound, 0);
     }
 
-    const Uint8* keys_states = SDL_GetKeyboardState(NULL);
-    player.handle_event(keys_states);
+    if (is_on_ground) {
+      // prevent player from jumping while in the air
+      if (jump) {
+        player.jump();
+      } else {
+        const Uint8* keys_states = SDL_GetKeyboardState(NULL);
+        player.handle_event(keys_states);
+      }
+    }
+
+    // TODO: too many calls to player.check_collision() ???
+    // TODO: player.move() ???
 
     // recalculate fps
     if (frame % 10 == 0) {

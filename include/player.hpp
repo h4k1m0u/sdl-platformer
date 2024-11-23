@@ -5,6 +5,7 @@
 #include <array>
 #include <vector>
 
+#include "collision.hpp"
 #include "texture.hpp"
 #include "direction.hpp"
 
@@ -29,10 +30,8 @@ private:
   Direction m_direction;
   Clips m_positions_clips;
   SDL_Rect m_bbox;
-  bool m_can_jump;
 
   void calculate_positions_clips();
-  bool collides_bottom(SDL_Point& point_contact);
 
 public:
   Player(SDL_Renderer* renderer, const std::vector<SDL_Rect>& obstacles);
@@ -40,6 +39,7 @@ public:
   void render(int frame);
   void free();
 
+  bool check_collision(Collision::Side side, SDL_Point& point_contact);
   void jump();
   void fall();
 };

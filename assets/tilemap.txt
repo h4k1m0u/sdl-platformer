@@ -1,15 +1,15 @@
-RRRRRRRRRRRRRRRRRRRR
-R                  R
-R                  R
-R                  R
-R         SSSSSSS  R
-R                  R
-R                   
-R  SSSSSSS          
-R                  R
-R                  R
-R     SSSSSSS      R
-R                  R
-R                  R
-RGGGGGGGG  GGGGGGGGR
-RRRRRRRRRRRRRRRRRRRR
+                    
+                    
+                    
+                    
+          SSSSSSS   
+                    
+                    
+   SSSSSSS          
+                    
+                    
+      SSSSSSS       
+                    
+                    
+                    
+GGGGGGGGG  GGGGGGGGG

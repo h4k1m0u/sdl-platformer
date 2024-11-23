@@ -7,6 +7,7 @@
 #include "collision.hpp"
 
 Player::Player(SDL_Renderer* renderer, const std::vector<SDL_Rect>& obstacles):
+  // TODO: no need for this if collision detection made external???
   m_obstacles(obstacles),
 
   m_texture(PATH_TEXTURE, { WIDTH, HEIGHT }, renderer),
@@ -15,8 +16,7 @@ Player::Player(SDL_Renderer* renderer, const std::vector<SDL_Rect>& obstacles):
   m_velocity_x(0),
   m_velocity_y(0),
   m_direction(Direction::NONE),
-  m_bbox({ m_position.x, m_position.y, WIDTH, HEIGHT }),
-  m_can_jump(false)
+  m_bbox({ m_position.x, m_position.y, WIDTH, HEIGHT })
 {
   calculate_positions_clips();
 }
@@ -44,16 +44,8 @@ void Player::calculate_positions_clips() {
  * SDL_KEYDOWN/UP better for puncutual events like firing a bullet (typing keyboard)
  */
 void Player::handle_event(const Uint8* key_states) {
-  SDL_Point point_contact;
-  bool on_ground = collides_bottom(point_contact);
-
-  if (!on_ground) {
-    fall();
-    return;
-  }
-
-  m_can_jump = true;
   m_velocity_y = 0;
+  std::cout << "handle_event(): " << "m_velocity_y: " << m_velocity_y << '\n';
 
   if (key_states[SDL_SCANCODE_LEFT] || key_states[SDL_SCANCODE_A]) {
     m_direction = Direction::LEFT;
@@ -74,13 +66,17 @@ void Player::handle_event(const Uint8* key_states) {
   m_bbox.x = m_position.x = x_new;
 }
 
-/* Check collision of next position to prevent sprite from penetrating ground */
-bool Player::collides_bottom(SDL_Point& point_contact) {
+/**
+ * Check collision of next position
+ * Used to prevent sprite from penetrating ground from top (on fall) or bottom (on jump)
+ */
+bool Player::check_collision(Collision::Side side, SDL_Point& point_contact) {
   SDL_Rect bbox_new = m_bbox;
   bbox_new.y += m_velocity_y;
-  const Collision::Side side = Collision::Side::TOP;
+  bool collides = Collision::collides(bbox_new, m_obstacles, side, point_contact);
+  std::cout << "check_collision(): " << collides << '\n';
 
-  return Collision::collides(bbox_new, m_obstacles, side, point_contact);
+  return collides;
 }
 
 /**
@@ -90,13 +86,27 @@ bool Player::collides_bottom(SDL_Point& point_contact) {
 void Player::fall() {
   m_direction = Direction::NONE;
   m_velocity_y += GRAVITY;
-  std::cout << "m_velocity_y: " << m_velocity_y << '\n';
 
-  SDL_Point point_contact;
-  bool on_ground = collides_bottom(point_contact);
-  std::cout << "on_ground: " << on_ground << " point_contact.y: " << point_contact.y << '\n';
+  // TODO: collision detection should be performed only once!
+  SDL_Point point_contact_top, point_contact_bottom;
+  bool collides_top = check_collision(Collision::Side::TOP, point_contact_top);
+  bool collides_bottom = check_collision(Collision::Side::BOTTOM, point_contact_bottom);
+  std::cout << "fall(): " << "on_ground: " << collides_top
+            << " GRAVITY: " << GRAVITY
+            << " m_velocity_y: " << m_velocity_y << '\n';
 
-  int y_new = on_ground ? point_contact.y - HEIGHT : m_bbox.y + m_velocity_y;
+  int y_new = m_bbox.y + m_velocity_y;
+
+  if (collides_top)
+    // colliding during downward movement
+    y_new = point_contact_top.y - HEIGHT;
+  else if (collides_bottom) {
+    // colliding during upward movement (deceleration in jump impulse)
+    y_new = point_contact_bottom.y;
+    m_velocity_y = 0;
+    std::cout << "fall(): --- HITTING FROM BOTTOM ---" << '\n';
+  }
+
   m_bbox.y = m_position.y = y_new;
 }
 
@@ -104,17 +114,22 @@ void Player::fall() {
  * Ease-Out (deceleration thanks to gravity in fall())
  */
 void Player::jump() {
-  // prevent player from jumping while in the air
-  if (!m_can_jump)
-    return;
-
-  m_can_jump = false;
-
   // strong vertical velocity to resist gravity (to a certain extent)
-  std::cout << "--- JUMPING ---" << '\n';
   m_direction = Direction::NONE;
   m_velocity_y = -4 * SPEED;
+
+  SDL_Point point_contact;
+  bool collides_bottom = check_collision(Collision::Side::BOTTOM, point_contact);
+  std::cout << "--- JUMPING ---: m_velocity_y: " << m_velocity_y
+            << " collides: " << collides_bottom
+            << '\n';
+
   int y_new = m_position.y + m_velocity_y;
+  if (collides_bottom) {
+    y_new = point_contact.y;
+    m_velocity_y = 0;
+    std::cout << "jump(): --- HITTING FROM BOTTOM ---" << '\n';
+  }
   m_bbox.y = m_position.y = y_new;
 }
 
