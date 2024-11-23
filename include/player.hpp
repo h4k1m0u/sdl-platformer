@@ -17,21 +17,19 @@ private:
   const int GRAVITY = 1;
   static const int N_FRAMES = 3;
 
-  std::vector<SDL_Rect> m_obstacles;
+  using Frames = std::array<SDL_Point, N_FRAMES>;
+  using Clips = std::unordered_map<Direction, Frames>;
 
+  std::vector<SDL_Rect> m_obstacles;
   Texture m_texture;
   SDL_Point m_position;
   SDL_Point m_position_clip;
   int m_velocity_x;
   int m_velocity_y;
   Direction m_direction;
-
-  using Frames = std::array<SDL_Point, N_FRAMES>;
-  using Clips = std::unordered_map<Direction, Frames>;
-
   Clips m_positions_clips;
-
   SDL_Rect m_bbox;
+  bool m_can_jump;
 
   void calculate_positions_clips();
   bool collides_bottom(SDL_Point& point_contact);

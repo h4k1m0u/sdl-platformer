@@ -15,7 +15,8 @@ Player::Player(SDL_Renderer* renderer, const std::vector<SDL_Rect>& obstacles):
   m_velocity_x(0),
   m_velocity_y(0),
   m_direction(Direction::NONE),
-  m_bbox({ m_position.x, m_position.y, WIDTH, HEIGHT })
+  m_bbox({ m_position.x, m_position.y, WIDTH, HEIGHT }),
+  m_can_jump(false)
 {
   calculate_positions_clips();
 }
@@ -51,6 +52,7 @@ void Player::handle_event(const Uint8* key_states) {
     return;
   }
 
+  m_can_jump = true;
   m_velocity_y = 0;
 
   if (key_states[SDL_SCANCODE_LEFT] || key_states[SDL_SCANCODE_A]) {
@@ -99,10 +101,16 @@ void Player::fall() {
 }
 
 /**
- * Strong vertical velocity to resist gravity (to a certain extent)
  * Ease-Out (deceleration thanks to gravity in fall())
  */
 void Player::jump() {
+  // prevent player from jumping while in the air
+  if (!m_can_jump)
+    return;
+
+  m_can_jump = false;
+
+  // strong vertical velocity to resist gravity (to a certain extent)
   std::cout << "--- JUMPING ---" << '\n';
   m_direction = Direction::NONE;
   m_velocity_y = -4 * SPEED;

@@ -30,7 +30,7 @@ void Tilemap::parse() {
       SDL_Point position_sequence = { i_col * WIDTH_TILE, i_row * HEIGHT_TILE };
       int n_tiles_sequence = 0;
 
-      while (i_col < n_cols && static_cast<TILE_TYPE>(line[i_col]) != TILE_TYPE::VOID) {
+      while (i_col < n_cols && (tile_type = static_cast<TILE_TYPE>(line[i_col])) != TILE_TYPE::VOID) {
         SDL_Point position = { i_col * WIDTH_TILE, i_row * HEIGHT_TILE };
         m_tiles[tile_type].push_back(position);
         n_tiles_sequence++;
