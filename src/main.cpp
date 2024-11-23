@@ -62,11 +62,12 @@ int main() {
   fps.start_timer();
 
   while (!quit) {
-    // physics (collision detection player & ground tiles)
+    // physics (collision detection between player & ground tiles)
     SDL_Point point_contact;
-    bool is_on_ground = player.check_collision(Collision::Side::TOP, point_contact);
+    auto [ side_x, side_y ] = player.check_collision(point_contact);
+    bool is_on_ground = (side_y == Collision::SideY::ABOVE);
 
-    std::cout << frame << " main loop(): " << "on_ground: " << is_on_ground << " point_contact.y: " << point_contact.y << '\n';
+    // std::cout << frame << " main loop(): " << "on_ground: " << is_on_ground << " point_contact.y: " << point_contact.y << '\n';
 
     if (!is_on_ground) {
       player.fall();

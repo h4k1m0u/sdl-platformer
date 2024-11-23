@@ -40,7 +40,7 @@ public:
   void render(int frame);
   void free();
 
-  bool check_collision(Collision::Side side, SDL_Point& point_contact);
+  Collision::Sides check_collision(SDL_Point& point_contact);
   void jump();
   void fall();
 };

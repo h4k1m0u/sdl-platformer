@@ -71,39 +71,39 @@ void Player::handle_event(const Uint8* key_states) {
  * Check collision of next position
  * Used to prevent sprite from penetrating ground from top (on fall) or bottom (on jump)
  */
-bool Player::check_collision(Collision::Side side, SDL_Point& point_contact) {
+Collision::Sides Player::check_collision(SDL_Point& point_contact) {
   SDL_Rect bbox_new = m_bbox;
   bbox_new.y += m_velocity_y;
-  bool collides = Collision::collides(bbox_new, m_obstacles, side, point_contact);
-  std::cout << "check_collision(): " << collides << '\n';
+  Collision::Sides sides = Collision::find_collision_sides(bbox_new, m_obstacles, point_contact);
+  std::cout << "check_collision(): sides: "
+            << static_cast<char>(sides.first) << static_cast<char>(sides.second)
+            << '\n';
 
-  return collides;
+  return sides;
 }
 
-/**
- * More realistic fall when velocity affected by gravity
- * Ease-In (acceleration)
- */
+/* Ease-In (acceleration) */
 void Player::fall() {
+  // more realistic fall when velocity affected by gravity
   m_direction = Direction::NONE;
   m_velocity_y += GRAVITY;
 
-  // TODO: collision detection should be performed only once!
-  SDL_Point point_contact_top, point_contact_bottom;
-  bool collides_top = check_collision(Collision::Side::TOP, point_contact_top);
-  bool collides_bottom = check_collision(Collision::Side::BOTTOM, point_contact_bottom);
-  std::cout << "fall(): " << "on_ground: " << collides_top
+  // collision detection performed only once!
+  SDL_Point point_contact;
+  auto [ side_x, side_y ] = check_collision(point_contact);
+  std::cout << "fall(): "
             << " GRAVITY: " << GRAVITY
             << " m_velocity_y: " << m_velocity_y << '\n';
 
   int y_new = m_bbox.y + m_velocity_y;
 
-  if (collides_top)
+  if (side_y == Collision::SideY::ABOVE) {
     // colliding during downward movement
-    y_new = point_contact_top.y - HEIGHT;
-  else if (collides_bottom) {
+    y_new = point_contact.y - HEIGHT;
+  }
+  else if (side_y == Collision::SideY::BELOW) {
     // colliding during upward movement (deceleration in jump impulse)
-    y_new = point_contact_bottom.y;
+    y_new = point_contact.y;
     m_velocity_y = 0;
     std::cout << "fall(): --- HITTING FROM BOTTOM ---" << '\n';
   }
@@ -111,22 +111,18 @@ void Player::fall() {
   m_bbox.y = m_position.y = y_new;
 }
 
-/**
- * Ease-Out (deceleration thanks to gravity in fall())
- */
+/* Ease-Out (deceleration thanks to gravity in fall()) */
 void Player::jump() {
   // strong vertical velocity to resist gravity (to a certain extent)
   m_direction = Direction::NONE;
   m_velocity_y = -4 * SPEED;
 
   SDL_Point point_contact;
-  bool collides_bottom = check_collision(Collision::Side::BOTTOM, point_contact);
-  std::cout << "--- JUMPING ---: m_velocity_y: " << m_velocity_y
-            << " collides: " << collides_bottom
-            << '\n';
+  auto [ side_x, side_y ] = check_collision(point_contact);
+  std::cout << "--- JUMPING ---: m_velocity_y: " << m_velocity_y << '\n';
 
   int y_new = m_position.y + m_velocity_y;
-  if (collides_bottom) {
+  if (side_y == Collision::SideY::BELOW) {
     y_new = point_contact.y;
     m_velocity_y = 0;
     std::cout << "jump(): --- HITTING FROM BOTTOM ---" << '\n';

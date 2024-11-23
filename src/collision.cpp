@@ -17,37 +17,41 @@ SDL_Point Collision::rect_to_rect(const SDL_Rect& rect1, const SDL_Rect& rect2) 
 
 /**
  * Check if colliding on given side & return contact point (y for TB & x for LR)
- * @pararm side Position of rect rel. to rect_other (e.g. TOP: rect is above rect_other)
+ * @return side Position of rect rel. to rect_other if colliding (e.g. TOP: rect is above rect_other)
  * @return contact_point Needed to re-position sprite on collision (and avoid penetrating tiles)
  */
-bool Collision::collides(const SDL_Rect& rect, const std::vector<SDL_Rect>& rects, Side side, SDL_Point& point_contact) {
+Collision::Sides Collision::find_collision_sides(const SDL_Rect& rect, const std::vector<SDL_Rect>& rects, SDL_Point& point_contact) {
+
   for (const SDL_Rect& rect_other : rects) {
     SDL_Point collides = rect_to_rect(rect, rect_other);
 
-    bool is_above = rect.y < rect_other.y;
-    bool is_left = rect.x < rect_other.x;
+    if (!collides.x || !collides.y)
+      continue;
 
-    bool is_correct_side = (
-      (side == Side::TOP && is_above) ||
-      (side == Side::BOTTOM && !is_above) ||
-      (side == Side::LEFT && is_left) ||
-      (side == Side::RIGHT && !is_left)
-    );
+    point_contact = { -1, -1 };
+    Sides side(SideX::NONE, SideY::NONE);
 
-    if (collides.x && collides.y && is_correct_side) {
-      if (side == Side::TOP)
-        point_contact.y = rect_other.y;
-      else if (side == Side::BOTTOM)
-        point_contact.y = rect_other.y + rect_other.h;
-      else if (side == Side::LEFT)
-        point_contact.x = rect_other.x;
-      else if (side == Side::RIGHT)
-        point_contact.x = rect_other.x + rect_other.w;
-
-      return true;
+    if (rect.x < rect_other.x) {
+      point_contact.x = rect_other.x;
+      side.first = SideX::LEFT;
     }
+    else if (rect.x + rect.w > rect_other.x + rect_other.w) {
+      point_contact.x = rect_other.x + rect_other.w;
+      side.first = SideX::RIGHT;
+    }
+
+    if (rect.y < rect_other.y) {
+      point_contact.y = rect_other.y;
+      side.second = SideY::ABOVE;
+    }
+    else if (rect.y + rect.h > rect_other.y + rect_other.h) {
+      point_contact.y = rect_other.y + rect_other.h;
+      side.second = SideY::BELOW;
+    }
+
+    return side;
   }
 
   point_contact = { -1, -1 };
-  return false;
+  return std::make_pair(SideX::NONE, SideY::NONE);
 }
