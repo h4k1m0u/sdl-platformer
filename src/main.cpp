@@ -69,31 +69,21 @@ int main() {
 
     // std::cout << frame << " main loop(): " << "on_ground: " << is_on_ground << " point_contact.y: " << point_contact.y << '\n';
 
-    if (!is_on_ground) {
-      player.fall();
-    }
-
     // process even queue once every frame
     SDL_Event e;
-    bool jump = false;
 
     while (SDL_PollEvent(&e)) {
       if (e.type == SDL_QUIT || (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE))
         quit = true;
-      else if (is_on_ground && e.type == SDL_KEYDOWN && (e.key.keysym.sym == SDLK_UP || e.key.keysym.sym == SDLK_w))
-        jump = true;
       else if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_SPACE)
         Mix_PlayChannel(-1, sound, 0);
     }
 
     if (is_on_ground) {
-      // prevent player from jumping while in the air
-      if (jump) {
-        player.jump();
-      } else {
-        const Uint8* keys_states = SDL_GetKeyboardState(NULL);
-        player.handle_event(keys_states);
-      }
+      const Uint8* keys_states = SDL_GetKeyboardState(NULL);
+      player.handle_event(keys_states);
+    } else {
+      player.fall();
     }
 
     // TODO: too many calls to player.check_collision() ???

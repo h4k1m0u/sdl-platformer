@@ -39,32 +39,50 @@ void Player::calculate_positions_clips() {
   }
 }
 
+/* confine within screen width */
+int Player::clamp_x(int x_new) {
+  return std::clamp(x_new, 0, Constants::SCREEN_WIDTH - WIDTH);
+}
+
 /**
  * Allow horizontal movement only if on ground
  * Smoother results with keystates: move as long as key pressed (like joystick)
  * SDL_KEYDOWN/UP better for puncutual events like firing a bullet (typing keyboard)
  */
 void Player::handle_event(const Uint8* key_states) {
+  // std::cout << "handle_event(): " << "m_velocity_y: " << m_velocity_y << '\n';
+  std::string keys = "";
+
+  m_direction = Direction::NONE;
+  m_velocity_x = 0;
   m_velocity_y = 0;
-  std::cout << "handle_event(): " << "m_velocity_y: " << m_velocity_y << '\n';
+
+  // vertical movement or oblique (if left/right also pressed)
+  if (key_states[SDL_SCANCODE_UP] || key_states[SDL_SCANCODE_W]) {
+    jump();
+    keys += "U";
+  }
 
   if (key_states[SDL_SCANCODE_LEFT] || key_states[SDL_SCANCODE_A]) {
     m_direction = Direction::LEFT;
     m_velocity_x = -SPEED;
+    keys += "L";
   }
   else if (key_states[SDL_SCANCODE_RIGHT] || key_states[SDL_SCANCODE_D]) {
     m_direction = Direction::RIGHT;
     m_velocity_x = SPEED;
-  } else {
-    m_direction = Direction::NONE;
-    m_velocity_x = 0;
+    keys += "R";
   }
+
+  std::cout << "--- Keys: " << keys
+            << " m_velocity_x: " << m_velocity_x
+            << " m_velocity_y: " << m_velocity_y
+            << '\n';
 
   // TODO: should check for collision on left & right! (to re-position player on x-axis)
 
-  // confine within screen & update bbox
-  int x_new = std::clamp(m_position.x + m_velocity_x, 0, Constants::SCREEN_WIDTH - WIDTH);
-  m_bbox.x = m_position.x = x_new;
+  // update position & bbox
+  m_bbox.x = m_position.x = clamp_x(m_position.x + m_velocity_x);
 }
 
 /**
@@ -75,27 +93,29 @@ Collision::Sides Player::check_collision(SDL_Point& point_contact) {
   SDL_Rect bbox_new = m_bbox;
   bbox_new.y += m_velocity_y;
   Collision::Sides sides = Collision::find_collision_sides(bbox_new, m_obstacles, point_contact);
+  /*
   std::cout << "check_collision(): sides: "
             << static_cast<char>(sides.first) << static_cast<char>(sides.second)
             << '\n';
+  */
 
   return sides;
 }
 
 /* Ease-In (acceleration) */
 void Player::fall() {
-  // more realistic fall when velocity affected by gravity
+  // more realistic fall when vertical velocity affected by gravity
   m_direction = Direction::NONE;
   m_velocity_y += GRAVITY;
 
-  // collision detection performed only once!
+  // collision detection performed once for grids above/below
   SDL_Point point_contact;
   auto [ side_x, side_y ] = check_collision(point_contact);
-  std::cout << "fall(): "
-            << " GRAVITY: " << GRAVITY
+  std::cout << "fall():"
+            << " m_velocity_x: " << m_velocity_x
             << " m_velocity_y: " << m_velocity_y << '\n';
 
-  int y_new = m_bbox.y + m_velocity_y;
+  int y_new = m_position.y + m_velocity_y;
 
   if (side_y == Collision::SideY::ABOVE) {
     // colliding during downward movement
@@ -105,27 +125,33 @@ void Player::fall() {
     // colliding during upward movement (deceleration in jump impulse)
     y_new = point_contact.y;
     m_velocity_y = 0;
-    std::cout << "fall(): --- HITTING FROM BOTTOM ---" << '\n';
+    // std::cout << "fall(): --- HITTING FROM BOTTOM ---" << '\n';
   }
 
   m_bbox.y = m_position.y = y_new;
+
+  // needed for oblique jump (left-up or right-up)
+  m_bbox.x = m_position.x = clamp_x(m_position.x + m_velocity_x);
 }
 
 /* Ease-Out (deceleration thanks to gravity in fall()) */
 void Player::jump() {
   // strong vertical velocity to resist gravity (to a certain extent)
   m_direction = Direction::NONE;
-  m_velocity_y = -4 * SPEED;
+  m_velocity_y = -IMPULSE_FACTOR_Y * SPEED;
 
   SDL_Point point_contact;
   auto [ side_x, side_y ] = check_collision(point_contact);
-  std::cout << "--- JUMPING ---: m_velocity_y: " << m_velocity_y << '\n';
+  std::cout << "--- JUMPING ---:"
+            << " m_velocity_x: " << m_velocity_x
+            << " m_velocity_y: " << m_velocity_y
+            << '\n';
 
   int y_new = m_position.y + m_velocity_y;
   if (side_y == Collision::SideY::BELOW) {
     y_new = point_contact.y;
     m_velocity_y = 0;
-    std::cout << "jump(): --- HITTING FROM BOTTOM ---" << '\n';
+    // std::cout << "jump(): --- HITTING FROM BOTTOM ---" << '\n';
   }
   m_bbox.y = m_position.y = y_new;
 }

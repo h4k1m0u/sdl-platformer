@@ -15,8 +15,14 @@ private:
   const int WIDTH = 48;
   const int HEIGHT = 46;
   const int SPEED = 4;
-  const int GRAVITY = 1;
   static const int N_FRAMES = 3;
+
+  /**
+   * Gravity: friction to upward vertical movement in case of jump (oblique or not)
+   * Impulse: factor to initial vertical push (case of jump) to resist gravity
+   */
+  const int GRAVITY = 1;
+  const int IMPULSE_FACTOR_Y = 4;
 
   using Frames = std::array<SDL_Point, N_FRAMES>;
   using Clips = std::unordered_map<Direction, Frames>;
@@ -33,6 +39,7 @@ private:
   SDL_Rect m_bbox;
 
   void calculate_positions_clips();
+  int clamp_x(int x_new);
 
 public:
   Player(SDL_Renderer* renderer, const std::vector<SDL_Rect>& obstacles);
