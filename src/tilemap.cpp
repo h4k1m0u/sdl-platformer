@@ -2,6 +2,7 @@
 
 #include "tilemap.hpp"
 #include "constants.hpp"
+#include "drawer.hpp"
 
 Tilemap::Tilemap(SDL_Renderer* renderer):
   m_renderer(renderer),
@@ -51,21 +52,24 @@ std::vector<SDL_Rect> Tilemap::get_bboxes() const {
   return m_bboxes;
 }
 
-void Tilemap::render() {
+void Tilemap::render(const SDL_Rect& camera) {
+  // TODO: add frustum culling to avoid rendering outside camera ?
   for (TILE_TYPE tile_type : { TILE_TYPE::ROCK, TILE_TYPE::GRASS, TILE_TYPE::STONE }) {
     SDL_Point position_clip = POSITIONS_CLIPS.at(tile_type);
     std::vector<SDL_Point> positions = m_tiles[tile_type];
 
+    // change of origin rel. to camera
     for (const SDL_Point& position : positions) {
-      m_texture.render(position, position_clip);
+      SDL_Point position_rel = { position.x - camera.x, position.y - camera.y };
+      m_texture.render(position_rel, position_clip);
     }
   }
 
   // show bboxes in debug mode
   if (Constants::DEBUG) {
-    const SDL_Color color = Constants::COLOR_BBOX;
-    SDL_SetRenderDrawColor(m_renderer, color.r, color.g, color.b, color.a);
-    SDL_RenderDrawRects(m_renderer, m_bboxes.data(), m_bboxes.size());
+    for (const SDL_Rect& bbox : m_bboxes) {
+      Drawer::draw_bbox(m_renderer, bbox, camera);
+    }
   }
 }
 

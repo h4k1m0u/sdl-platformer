@@ -1,4 +1,5 @@
 #include <iostream>
+#include <algorithm>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_mixer.h>
 
@@ -26,10 +27,20 @@ int main() {
   // SDL_RENDERER_PRESENTVSYNC: sync'ed with screen refresh rate (otherwise fps > 1000)
   SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 
+  // camera
+  SDL_Rect camera = { 0, 0, Constants::SCREEN_WIDTH, Constants::SCREEN_HEIGHT };
+
   // tilemap
   Tilemap tilemap(renderer);
   std::vector<SDL_Rect> obstacles = tilemap.get_bboxes();
   std::cout << "# of grounds: " << obstacles.size() << '\n';
+  /*
+  for (const SDL_Rect& bbox : obstacles) {
+    std::cout << "Obstacle: " << bbox.x << " " << bbox.y << " "
+              << bbox.w << " " << bbox.h << '\n';
+  }
+  return 0;
+  */
 
   // player
   Player player(renderer, obstacles);
@@ -86,6 +97,13 @@ int main() {
       player.fall();
     }
 
+    // camera follows player (centered around it)
+    SDL_Point center_player = player.get_center();
+    camera.x = std::clamp(center_player.x - Constants::SCREEN_WIDTH/2, 0, Constants::LEVEL_WIDTH - Constants::SCREEN_WIDTH);
+    camera.y = std::clamp(center_player.y - Constants::SCREEN_HEIGHT/2, 0, Constants::LEVEL_HEIGHT - Constants::SCREEN_HEIGHT);
+
+    // std::cout << frame << " camera: " << camera.x << " " << camera.y << '\n';
+
     // TODO: too many calls to player.check_collision() ???
     // TODO: player.move() ???
 
@@ -99,8 +117,8 @@ int main() {
     SDL_SetRenderDrawColor(renderer, COLOR_SKY.r, COLOR_SKY.g, COLOR_SKY.b, COLOR_SKY.a);
     SDL_RenderClear(renderer);
 
-    tilemap.render();
-    player.render(frame);
+    tilemap.render(camera);
+    player.render(frame, camera);
     fps.render();
 
     SDL_RenderPresent(renderer);

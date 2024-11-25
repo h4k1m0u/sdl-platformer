@@ -5,6 +5,7 @@
 #include "constants.hpp"
 #include "direction.hpp"
 #include "collision.hpp"
+#include "drawer.hpp"
 
 Player::Player(SDL_Renderer* renderer, const std::vector<SDL_Rect>& obstacles):
   // TODO: no need for this if collision detection made external???
@@ -41,7 +42,7 @@ void Player::calculate_positions_clips() {
 
 /* confine within screen width */
 int Player::clamp_x(int x_new) {
-  return std::clamp(x_new, 0, Constants::SCREEN_WIDTH - WIDTH);
+  return std::clamp(x_new, 0, Constants::LEVEL_WIDTH - WIDTH);
 }
 
 /**
@@ -74,10 +75,12 @@ void Player::handle_event(const Uint8* key_states) {
     keys += "R";
   }
 
+  /*
   std::cout << "--- Keys: " << keys
             << " m_velocity_x: " << m_velocity_x
             << " m_velocity_y: " << m_velocity_y
             << '\n';
+  */
 
   // TODO: should check for collision on left & right! (to re-position player on x-axis)
 
@@ -159,7 +162,7 @@ void Player::jump() {
 /**
  * @param frame Determines where to clip texture
  */
-void Player::render(int frame) {
+void Player::render(int frame, const SDL_Rect& camera) {
   if (m_direction != Direction::NONE) {
     // slow down animation (change image every 9 frames)
     // int frame_player = frame % N_FRAMES;
@@ -167,14 +170,19 @@ void Player::render(int frame) {
     m_position_clip = m_positions_clips[m_direction][frame_player];
   }
 
-  m_texture.render(m_position, m_position_clip);
+  // change of origin rel. to camera
+  SDL_Point position_rel = { m_position.x - camera.x, m_position.y - camera.y };
+  m_texture.render(position_rel, m_position_clip);
 
   // show bbox in debug mode
   if (Constants::DEBUG) {
-    const SDL_Color color = Constants::COLOR_BBOX;
-    SDL_SetRenderDrawColor(m_renderer, color.r, color.g, color.b, color.a);
-    SDL_RenderDrawRect(m_renderer, &m_bbox);
+    Drawer::draw_bbox(m_renderer, m_bbox, camera);
   }
+}
+
+SDL_Point Player::get_center() const {
+  SDL_Point center = { m_position.x + WIDTH / 2, m_position.y + HEIGHT / 2 };
+  return center;
 }
 
 void Player::free() {

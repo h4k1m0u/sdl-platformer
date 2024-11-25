@@ -11,7 +11,7 @@ class Tilemap {
 public:
   Tilemap(SDL_Renderer* renderer);
   std::vector<SDL_Rect> get_bboxes() const;
-  void render();
+  void render(const SDL_Rect& camera);
   void free();
 
 private:

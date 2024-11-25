@@ -44,12 +44,13 @@ private:
 public:
   Player(SDL_Renderer* renderer, const std::vector<SDL_Rect>& obstacles);
   void handle_event(const Uint8* key_states);
-  void render(int frame);
+  void render(int frame, const SDL_Rect& camera);
   void free();
 
   Collision::Sides check_collision(SDL_Point& point_contact);
   void jump();
   void fall();
+  SDL_Point get_center() const;
 };
 
 #endif
