@@ -32,6 +32,7 @@ int main() {
 
   // tilemap
   Tilemap tilemap(renderer);
+  tilemap.render_to_texture();
   std::vector<SDL_Rect> obstacles = tilemap.get_bboxes();
   std::cout << "# of grounds: " << obstacles.size() << '\n';
   /*
@@ -112,9 +113,8 @@ int main() {
       fps.calculate(frame);
     }
 
-    // clear window & draw textures
-    const SDL_Color COLOR_SKY = { 80, 255, 232, 255 };
-    SDL_SetRenderDrawColor(renderer, COLOR_SKY.r, COLOR_SKY.g, COLOR_SKY.b, COLOR_SKY.a);
+    // clear window
+    SDL_SetRenderDrawColor(renderer, 0xff, 0xff, 0xff, 0xff);
     SDL_RenderClear(renderer);
 
     tilemap.render(camera);

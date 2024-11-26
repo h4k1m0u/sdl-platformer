@@ -176,7 +176,7 @@ void Player::render(int frame, const SDL_Rect& camera) {
 
   // show bbox in debug mode
   if (Constants::DEBUG) {
-    Drawer::draw_bbox(m_renderer, m_bbox, camera);
+    Drawer::draw_bbox(m_renderer, m_bbox, &camera);
   }
 }
 

@@ -3,10 +3,12 @@
 #include "tilemap.hpp"
 #include "constants.hpp"
 #include "drawer.hpp"
+// #include "collision.hpp"
 
 Tilemap::Tilemap(SDL_Renderer* renderer):
   m_renderer(renderer),
-  m_texture(PATH_TEXTURE, { WIDTH_TILE, HEIGHT_TILE }, renderer)
+  m_texture(PATH_TEXTURE, { WIDTH_TILE, HEIGHT_TILE }, renderer),
+  m_texture_raw(SDL_CreateTexture(m_renderer, SDL_PIXELFORMAT_RGB888, SDL_TEXTUREACCESS_TARGET, Constants::LEVEL_WIDTH, Constants::LEVEL_HEIGHT))
 {
   parse();
 }
@@ -52,27 +54,46 @@ std::vector<SDL_Rect> Tilemap::get_bboxes() const {
   return m_bboxes;
 }
 
-void Tilemap::render(const SDL_Rect& camera) {
-  // TODO: add frustum culling to avoid rendering outside camera ?
+/**
+ * Rendering to a texture is an order of magnitude quicker than rendering individual tiles each frame.
+ * For tilemap: 1μs/frame vs 20μs before. Frustum culling didn't improve much (19μs).
+ */
+void Tilemap::render_to_texture() {
+  // render to texture
+  SDL_SetRenderTarget(m_renderer, m_texture_raw);
+
+  // background
+  const SDL_Color COLOR_SKY = { 80, 255, 232, 255 };
+  SDL_SetRenderDrawColor(m_renderer, COLOR_SKY.r, COLOR_SKY.g, COLOR_SKY.b, COLOR_SKY.a);
+  SDL_RenderClear(m_renderer);
+
+  // tiles
   for (TILE_TYPE tile_type : { TILE_TYPE::ROCK, TILE_TYPE::GRASS, TILE_TYPE::STONE }) {
     SDL_Point position_clip = POSITIONS_CLIPS.at(tile_type);
     std::vector<SDL_Point> positions = m_tiles[tile_type];
 
-    // change of origin rel. to camera
     for (const SDL_Point& position : positions) {
-      SDL_Point position_rel = { position.x - camera.x, position.y - camera.y };
-      m_texture.render(position_rel, position_clip);
+      m_texture.render(position, position_clip);
     }
   }
 
   // show bboxes in debug mode
   if (Constants::DEBUG) {
     for (const SDL_Rect& bbox : m_bboxes) {
-      Drawer::draw_bbox(m_renderer, bbox, camera);
+      Drawer::draw_bbox(m_renderer, bbox);
     }
   }
+
+  // render to window again
+  SDL_SetRenderTarget(m_renderer, NULL);
+}
+
+void Tilemap::render(const SDL_Rect& camera) {
+  const SDL_Rect rect_dest = { 0, 0, Constants::SCREEN_WIDTH, Constants::SCREEN_HEIGHT };
+  SDL_RenderCopy(m_renderer, m_texture_raw, &camera, &rect_dest);
 }
 
 void Tilemap::free() {
   m_texture.free();
+  SDL_DestroyTexture(m_texture_raw);
 }
