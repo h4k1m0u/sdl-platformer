@@ -7,6 +7,7 @@
 /* Renders textures stored on GPU (faster to blit than surfaces stored on CPU memory) */
 class Texture {
 public:
+  Texture() = default;
   Texture(const std::string& path_image, const SDL_Point& size, SDL_Renderer* renderer);
   Texture(TTF_Font* font, const std::string& text, SDL_Renderer* renderer);
 

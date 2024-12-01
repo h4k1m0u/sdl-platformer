@@ -7,6 +7,18 @@
 #include "collision.hpp"
 #include "drawer.hpp"
 
+const std::string PATH_TEXTURE = "./assets/werewolf-NESW.png";
+const int WIDTH = 48;
+const int HEIGHT = 46;
+const int SPEED = 4;
+
+/**
+ * Gravity: friction to upward vertical movement in case of jump (oblique or not)
+ * Impulse: factor to initial vertical push (case of jump) to resist gravity
+ */
+const int GRAVITY = 1;
+const int IMPULSE_FACTOR_Y = 4;
+
 Player::Player(SDL_Renderer* renderer, const std::vector<SDL_Rect>& obstacles):
   // TODO: no need for this if collision detection made external???
   m_obstacles(obstacles),

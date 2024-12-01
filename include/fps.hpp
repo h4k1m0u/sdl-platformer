@@ -10,7 +10,9 @@ private:
   Uint64 m_start_ticks;
 
 public:
+  FPS() = default;
   FPS(TTF_Font* font, SDL_Renderer* renderer);
+
   void start_timer();
   void calculate(int frame);
   void render();

@@ -3,7 +3,17 @@
 #include "tilemap.hpp"
 #include "constants.hpp"
 #include "drawer.hpp"
-// #include "collision.hpp"
+
+const std::string PATH_TILEMAP = "./assets/tilemap.txt";
+const std::string PATH_TEXTURE = "./assets/tileset.png";
+const int WIDTH_TILE = 32;
+const int HEIGHT_TILE = 32;
+
+const std::unordered_map<TILE_TYPE, SDL_Point> POSITIONS_CLIPS = {
+  { TILE_TYPE::ROCK,  { 32, 0 } },
+  { TILE_TYPE::GRASS, { 64, 0 } },
+  { TILE_TYPE::STONE, { 96, 0 } }
+};
 
 Tilemap::Tilemap(SDL_Renderer* renderer):
   m_renderer(renderer),
