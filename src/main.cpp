@@ -8,11 +8,9 @@
 #include "constants.hpp"
 #include "tilemap.hpp"
 
-/*
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
 #endif
-*/
 
 // global vars (restructuring required by emscripten)
 SDL_Window* window;
@@ -25,6 +23,8 @@ Mix_Chunk* sound;
 Tilemap tilemap;
 Player player;
 FPS fps;
+
+SDL_Rect camera = { 0, 0, Constants::SCREEN_WIDTH, Constants::SCREEN_HEIGHT };
 
 /* Free all loaded assets */
 static void free() {
@@ -47,6 +47,68 @@ static void free() {
   SDL_Quit();
 }
 
+static void main_loop() {
+  static int frame = 0;
+
+  // physics (collision detection between player & ground tiles)
+  SDL_Point point_contact;
+  auto [ side_x, side_y ] = player.check_collision(point_contact);
+  bool is_on_ground = (side_y == Collision::SideY::ABOVE);
+
+  // std::cout << frame << " main loop(): " << "on_ground: " << is_on_ground << " point_contact.y: " << point_contact.y << '\n';
+
+  // process even queue once every frame
+  SDL_Event e;
+
+  while (SDL_PollEvent(&e)) {
+    if (e.type == SDL_QUIT || (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)) {
+      free();
+
+      #ifdef __EMSCRIPTEN__
+        emscripten_cancel_main_loop();  /* this should "kill" the app. */
+      #else
+        std::exit(0);
+      #endif
+    }
+    else if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_SPACE) {
+      Mix_PlayChannel(-1, sound, 0);
+    }
+  }
+
+  if (is_on_ground) {
+    const Uint8* keys_states = SDL_GetKeyboardState(NULL);
+    player.handle_event(keys_states);
+  } else {
+    player.fall();
+  }
+
+  // camera follows player (centered around it)
+  SDL_Point center_player = player.get_center();
+  camera.x = std::clamp(center_player.x - Constants::SCREEN_WIDTH/2, 0, Constants::LEVEL_WIDTH - Constants::SCREEN_WIDTH);
+  camera.y = std::clamp(center_player.y - Constants::SCREEN_HEIGHT/2, 0, Constants::LEVEL_HEIGHT - Constants::SCREEN_HEIGHT);
+
+  // std::cout << frame << " camera: " << camera.x << " " << camera.y << '\n';
+
+  // TODO: too many calls to player.check_collision() ???
+  // TODO: player.move() ???
+
+  // recalculate fps
+  if (frame % 10 == 0) {
+    fps.calculate(frame);
+  }
+
+  // clear window
+  SDL_SetRenderDrawColor(renderer, 0xff, 0xff, 0xff, 0xff);
+  SDL_RenderClear(renderer);
+
+  tilemap.render(camera);
+  player.render(frame, camera);
+  fps.render();
+
+  SDL_RenderPresent(renderer);
+  frame++;
+}
+
 int main() {
   // SDL2
   if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) {
@@ -65,9 +127,6 @@ int main() {
   // SDL_RENDERER_ACCELERATED: render textures stored on GPU (faster to blit than surfaces stored on CPU memory)
   // SDL_RENDERER_PRESENTVSYNC: sync'ed with screen refresh rate (otherwise fps > 1000)
   renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-
-  // camera
-  SDL_Rect camera = { 0, 0, Constants::SCREEN_WIDTH, Constants::SCREEN_HEIGHT };
 
   // tilemap
   tilemap = Tilemap(renderer);
@@ -107,64 +166,16 @@ int main() {
 
   // fps text
   fps = FPS(font, renderer);
-
-  int frame = 0;
-  bool quit = false;
   fps.start_timer();
 
-  while (!quit) {
-    // physics (collision detection between player & ground tiles)
-    SDL_Point point_contact;
-    auto [ side_x, side_y ] = player.check_collision(point_contact);
-    bool is_on_ground = (side_y == Collision::SideY::ABOVE);
-
-    // std::cout << frame << " main loop(): " << "on_ground: " << is_on_ground << " point_contact.y: " << point_contact.y << '\n';
-
-    // process even queue once every frame
-    SDL_Event e;
-
-    while (SDL_PollEvent(&e)) {
-      if (e.type == SDL_QUIT || (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE))
-        quit = true;
-      else if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_SPACE)
-        Mix_PlayChannel(-1, sound, 0);
+  // game loop
+  #ifdef __EMSCRIPTEN__
+    emscripten_set_main_loop(main_loop, 0, 1);
+  #else
+    while (true) {
+      main_loop();
     }
-
-    if (is_on_ground) {
-      const Uint8* keys_states = SDL_GetKeyboardState(NULL);
-      player.handle_event(keys_states);
-    } else {
-      player.fall();
-    }
-
-    // camera follows player (centered around it)
-    SDL_Point center_player = player.get_center();
-    camera.x = std::clamp(center_player.x - Constants::SCREEN_WIDTH/2, 0, Constants::LEVEL_WIDTH - Constants::SCREEN_WIDTH);
-    camera.y = std::clamp(center_player.y - Constants::SCREEN_HEIGHT/2, 0, Constants::LEVEL_HEIGHT - Constants::SCREEN_HEIGHT);
-
-    // std::cout << frame << " camera: " << camera.x << " " << camera.y << '\n';
-
-    // TODO: too many calls to player.check_collision() ???
-    // TODO: player.move() ???
-
-    // recalculate fps
-    if (frame % 10 == 0) {
-      fps.calculate(frame);
-    }
-
-    // clear window
-    SDL_SetRenderDrawColor(renderer, 0xff, 0xff, 0xff, 0xff);
-    SDL_RenderClear(renderer);
-
-    tilemap.render(camera);
-    player.render(frame, camera);
-    fps.render();
-
-    SDL_RenderPresent(renderer);
-    frame++;
-  }
-
-  free();
+  #endif
 
   return 0;
 }

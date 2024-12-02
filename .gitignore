@@ -1,4 +1,5 @@
 build
+build-emscripten
 compile_commands.json
 .cache
 tags
