@@ -18,8 +18,13 @@ public:
 
 private:
   Texture m_texture;
-
   std::unordered_map<Button, bool> m_clicked;
+  std::unordered_map<SDL_FingerID, Button> m_fingers;
+
+  void handle_mouse_event(const SDL_Event& e);
+  void handle_touch_event(const SDL_Event& e);
+  void reset_all();
+  void reset_by_finger(SDL_FingerID fingerId);
 };
 
 #endif // ARROW_BUTTONS_HPP

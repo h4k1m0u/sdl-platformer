@@ -43,37 +43,90 @@ ArrowButtons::ArrowButtons(SDL_Renderer* renderer):
     { Button::LEFT, false },
     { Button::RIGHT, false },
     { Button::UP, false },
-  })
+  }),
+  m_fingers()
 {
+}
+
+void ArrowButtons::reset_all() {
+  for (Button button : BUTTONS) {
+    m_clicked[button] = false;
+  }
+}
+
+void ArrowButtons::handle_mouse_event(const SDL_Event& e) {
+  if (e.button.button != SDL_BUTTON_LEFT)
+    return;
+
+  if (e.type == SDL_MOUSEBUTTONUP) {
+    reset_all();
+    return;
+  }
+
+  SDL_Point mouse_position = { e.button.x, e.button.y };
+
+  for (Button button : BUTTONS) {
+    if (Collision::point_in_rect(mouse_position, RECTS.at(button))) {
+      m_clicked[button] = true;
+      break;
+    }
+  }
+}
+
+void ArrowButtons::reset_by_finger(SDL_FingerID finger_id) {
+  Button button_released = m_fingers[finger_id];
+  m_clicked[button_released] = false;
+  m_fingers.erase(finger_id);
+}
+
+void ArrowButtons::handle_touch_event(const SDL_Event& e) {
+  if (e.type == SDL_FINGERUP) {
+    // only reset the finger that was released
+    reset_by_finger(e.tfinger.fingerId);
+    return;
+  }
+
+  // find fingers positions & ids
+  SDL_TouchID touch_id = e.tfinger.touchId;
+  int n_fingers = SDL_GetNumTouchFingers(touch_id);
+  SDL_Point fingers_positions[n_fingers];
+  SDL_FingerID fingers_ids[n_fingers];
+
+  for (int i = 0; i < n_fingers; ++i) {
+    SDL_Finger* finger = SDL_GetTouchFinger(touch_id, i);
+    SDL_Point finger_position = {
+      static_cast<int>(finger->x * Constants::SCREEN_WIDTH),
+      static_cast<int>(finger->y * Constants::SCREEN_HEIGHT)
+    };
+    fingers_positions[i] = finger_position;
+    fingers_ids[i] = finger->id;
+  }
+
+  // test each button against all fingers pressed
+  for (Button button : BUTTONS) {
+    for (int i = 0; i < n_fingers; ++i) {
+      SDL_Point finger_position = fingers_positions[i];
+      SDL_FingerID finger_id = fingers_ids[i];
+
+      if (Collision::point_in_rect(finger_position, RECTS.at(button))) {
+        m_clicked[button] = true;
+        m_fingers[finger_id] = button;
+        break;
+      }
+    }
+  }
 }
 
 /* Handles both mouse clicks & mobile touch events */
 void ArrowButtons::handle_event(const SDL_Event& e) {
   bool is_mouse_event = e.type == SDL_MOUSEBUTTONDOWN || e.type == SDL_MOUSEBUTTONUP;
-  if (is_mouse_event && e.button.button != SDL_BUTTON_LEFT)
-    return;
+  bool is_touch_event = e.type == SDL_FINGERUP || e.type == SDL_FINGERDOWN;
 
-  if (e.type == SDL_MOUSEBUTTONUP || e.type == SDL_FINGERUP) {
-    for (Button button : BUTTONS) {
-      m_clicked[button] = false;
-    }
-    return;
+  if (is_mouse_event) {
+    handle_mouse_event(e);
   }
-
-  SDL_Point finger_position = {
-    static_cast<int>(e.tfinger.x) * Constants::SCREEN_WIDTH,
-    static_cast<int>(e.tfinger.y) * Constants::SCREEN_HEIGHT
-  };
-  SDL_Point mouse_position = { e.button.x, e.button.y };
-  SDL_Point point = is_mouse_event ? mouse_position : finger_position;
-
-  for (size_t i = 0; i < BUTTONS.size(); ++i) {
-    Button button = static_cast<Button>(i);
-
-    if (Collision::point_in_rect(point, RECTS.at(button))) {
-      m_clicked[button] = true;
-      break;
-    }
+  else if (is_touch_event) {
+    handle_touch_event(e);
   }
 }
 

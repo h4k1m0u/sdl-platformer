@@ -28,8 +28,6 @@ ArrowButtons arrow_buttons;
 
 SDL_Rect camera = { 0, 0, Constants::SCREEN_WIDTH, Constants::SCREEN_HEIGHT };
 
-SDL_Rect rect_touch = { 0, 0, 100, 100 };
-
 /* Free all loaded assets */
 static void free() {
   Mix_FreeMusic(music);
@@ -116,9 +114,6 @@ static void main_loop() {
   player.render(frame, camera);
   fps.render();
   arrow_buttons.render();
-
-  SDL_SetRenderDrawColor(renderer, 0xff, 0x0, 0x0, 0xff);
-  SDL_RenderFillRect(renderer, &rect_touch);
 
   SDL_RenderPresent(renderer);
   frame++;
