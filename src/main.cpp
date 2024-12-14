@@ -79,23 +79,16 @@ static void main_loop() {
       Mix_PlayChannel(-1, sound, 0);
     }
 
-    else if (e.type == SDL_FINGERDOWN || e.type == SDL_FINGERMOTION) {
-      rect_touch.x = e.tfinger.x * Constants::SCREEN_WIDTH;
-      rect_touch.y = e.tfinger.y * Constants::SCREEN_HEIGHT;
-    }
-    else if (e.type == SDL_FINGERUP) {
-      rect_touch.x = 0;
-      rect_touch.y = 0;
-    }
-
-    else if (e.type == SDL_MOUSEBUTTONDOWN || e.type == SDL_MOUSEBUTTONUP) {
+    else if (e.type == SDL_MOUSEBUTTONDOWN || e.type == SDL_MOUSEBUTTONUP ||
+             e.type == SDL_FINGERDOWN || e.type == SDL_FINGERUP) {
       arrow_buttons.handle_event(e);
     }
   }
 
   if (is_on_ground) {
     const Uint8* keys_states = SDL_GetKeyboardState(NULL);
-    player.handle_event(keys_states);
+    std::unordered_map<Button, bool> clicked = arrow_buttons.get_clicked();
+    player.handle_event(keys_states, clicked);
   } else {
     player.fall();
   }

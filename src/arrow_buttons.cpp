@@ -39,7 +39,7 @@ const std::vector<Button> BUTTONS = { Button::LEFT, Button::RIGHT, Button::UP };
 
 ArrowButtons::ArrowButtons(SDL_Renderer* renderer):
   m_texture(PATH_TEXTURE, { WIDTH_BUTTON, HEIGHT_BUTTON }, renderer),
-  m_is_clicked({
+  m_clicked({
     { Button::LEFT, false },
     { Button::RIGHT, false },
     { Button::UP, false },
@@ -47,31 +47,43 @@ ArrowButtons::ArrowButtons(SDL_Renderer* renderer):
 {
 }
 
+/* Handles both mouse clicks & mobile touch events */
 void ArrowButtons::handle_event(const SDL_Event& e) {
-  if (e.button.button != SDL_BUTTON_LEFT)
+  bool is_mouse_event = e.type == SDL_MOUSEBUTTONDOWN || e.type == SDL_MOUSEBUTTONUP;
+  if (is_mouse_event && e.button.button != SDL_BUTTON_LEFT)
     return;
 
-  if (e.type == SDL_MOUSEBUTTONUP) {
+  if (e.type == SDL_MOUSEBUTTONUP || e.type == SDL_FINGERUP) {
     for (Button button : BUTTONS) {
-      m_is_clicked[button] = false;
+      m_clicked[button] = false;
     }
     return;
   }
 
+  SDL_Point finger_position = {
+    static_cast<int>(e.tfinger.x) * Constants::SCREEN_WIDTH,
+    static_cast<int>(e.tfinger.y) * Constants::SCREEN_HEIGHT
+  };
+  SDL_Point mouse_position = { e.button.x, e.button.y };
+  SDL_Point point = is_mouse_event ? mouse_position : finger_position;
+
   for (size_t i = 0; i < BUTTONS.size(); ++i) {
     Button button = static_cast<Button>(i);
-    SDL_Point mouse = { e.button.x, e.button.y };
 
-    if (Collision::point_in_rect(mouse, RECTS.at(button))) {
-      m_is_clicked[button] = true;
+    if (Collision::point_in_rect(point, RECTS.at(button))) {
+      m_clicked[button] = true;
       break;
     }
   }
 }
 
+std::unordered_map<Button, bool> ArrowButtons::get_clicked() const {
+  return m_clicked;
+}
+
 void ArrowButtons::render() {
   for (Button button : BUTTONS) {
-    SDL_Point position_clip = m_is_clicked[button] ? POSITIONS_CLIPS_PRESSED.at(button) : POSITIONS_CLIPS.at(button);
+    SDL_Point position_clip = m_clicked[button] ? POSITIONS_CLIPS_PRESSED.at(button) : POSITIONS_CLIPS.at(button);
     SDL_Point position = POSITIONS.at(button);
     m_texture.render(position, position_clip);
   }

@@ -8,6 +8,7 @@
 #include "collision.hpp"
 #include "texture.hpp"
 #include "direction.hpp"
+#include "button.hpp"
 
 class Player {
 private:
@@ -28,11 +29,13 @@ private:
 
   void calculate_positions_clips();
   int clamp_x(int x_new);
+  void move_left();
+  void move_right();
 
 public:
   Player() = default;
   Player(SDL_Renderer* renderer, const std::vector<SDL_Rect>& obstacles);
-  void handle_event(const Uint8* key_states);
+  void handle_event(const Uint8* key_states, const std::unordered_map<Button, bool>& clicked);
   void render(int frame, const SDL_Rect& camera);
   void free();
 

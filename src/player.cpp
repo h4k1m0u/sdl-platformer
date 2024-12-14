@@ -57,12 +57,23 @@ int Player::clamp_x(int x_new) {
   return std::clamp(x_new, 0, Constants::LEVEL_WIDTH - WIDTH);
 }
 
+void Player::move_left() {
+  m_direction = Direction::LEFT;
+  m_velocity_x = -SPEED;
+}
+
+void Player::move_right() {
+  m_direction = Direction::RIGHT;
+  m_velocity_x = SPEED;
+}
+
+
 /**
  * Allow horizontal movement only if on ground
- * Smoother results with keystates: move as long as key pressed (like joystick)
- * SDL_KEYDOWN/UP better for puncutual events like firing a bullet (typing keyboard)
+ * @param key_states Smoother results with keystates: move as long as key pressed (like joystick). SDL_KEYDOWN/UP better for puncutual events like firing a bullet (typing keyboard)
+ * @param clicked Player can react to a click/touch on an arrow button
  */
-void Player::handle_event(const Uint8* key_states) {
+void Player::handle_event(const Uint8* key_states, const std::unordered_map<Button, bool>& clicked) {
   // std::cout << "handle_event(): " << "m_velocity_y: " << m_velocity_y << '\n';
   std::string keys = "";
 
@@ -71,19 +82,17 @@ void Player::handle_event(const Uint8* key_states) {
   m_velocity_y = 0;
 
   // vertical movement or oblique (if left/right also pressed)
-  if (key_states[SDL_SCANCODE_UP] || key_states[SDL_SCANCODE_W]) {
+  if (key_states[SDL_SCANCODE_UP] || key_states[SDL_SCANCODE_W] || clicked.at(Button::UP)) {
     jump();
     keys += "U";
   }
 
-  if (key_states[SDL_SCANCODE_LEFT] || key_states[SDL_SCANCODE_A]) {
-    m_direction = Direction::LEFT;
-    m_velocity_x = -SPEED;
+  if (key_states[SDL_SCANCODE_LEFT] || key_states[SDL_SCANCODE_A] || clicked.at(Button::LEFT)) {
+    move_left();
     keys += "L";
   }
-  else if (key_states[SDL_SCANCODE_RIGHT] || key_states[SDL_SCANCODE_D]) {
-    m_direction = Direction::RIGHT;
-    m_velocity_x = SPEED;
+  else if (key_states[SDL_SCANCODE_RIGHT] || key_states[SDL_SCANCODE_D] || clicked.at(Button::RIGHT)) {
+    move_right();
     keys += "R";
   }
 

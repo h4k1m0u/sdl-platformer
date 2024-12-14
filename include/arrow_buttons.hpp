@@ -12,13 +12,14 @@ public:
   ArrowButtons(SDL_Renderer* renderer);
 
   void handle_event(const SDL_Event& e);
+  std::unordered_map<Button, bool> get_clicked() const;
   void render();
   void free();
 
 private:
   Texture m_texture;
 
-  std::unordered_map<Button, bool> m_is_clicked;
+  std::unordered_map<Button, bool> m_clicked;
 };
 
 #endif // ARROW_BUTTONS_HPP
