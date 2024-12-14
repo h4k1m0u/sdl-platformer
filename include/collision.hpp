@@ -20,6 +20,7 @@ namespace Collision {
 
   SDL_Point rect_to_rect(const SDL_Rect& rect1, const SDL_Rect& rect2);
   Sides find_collision_sides(const SDL_Rect& rect, const std::vector<SDL_Rect>& rects, SDL_Point& point_contact);
+  bool point_in_rect(const SDL_Point& point, const SDL_Rect& rect);
 };
 
 #endif

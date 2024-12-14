@@ -14,11 +14,13 @@ $ pacman -Sy sdl2 sdl2_image sdl2_ttf sdl2_mixer
 - [Music][music]
 - [Sound][sound]
 - [Tiles][tiles]
+- [Arrow buttons][arrow-buttons]
 
 [player-sprite]: https://opengameart.org/content/werewolf-lpc
 [music]: https://opengameart.org/content/caketown-cuteplayful
 [sound]: https://opengameart.org/content/foot-walking-step-sounds-on-stone-water-snow-wood-and-dirt
 [tiles]: https://opengameart.org/content/simple-platformer-tileset
+[arrow-buttons]: https://opengameart.org/content/mobile-ui-buttons-arrows-and-shoot
 
 # Bear
 Bear is used to build project & generate `compile_commands.json` for YCM linter:

@@ -4,16 +4,18 @@
 #include "constants.hpp"
 #include "drawer.hpp"
 
+using namespace Constants;
+
 const std::string PATH_TILEMAP = "./assets/tilemap.txt";
 const std::string PATH_TEXTURE = "./assets/tileset.png";
-const int WIDTH_TILE = 32;
-const int HEIGHT_TILE = 32;
 
 const std::unordered_map<TILE_TYPE, SDL_Point> POSITIONS_CLIPS = {
   { TILE_TYPE::ROCK,  { 32, 0 } },
   { TILE_TYPE::GRASS, { 64, 0 } },
   { TILE_TYPE::STONE, { 96, 0 } }
 };
+
+const std::vector<TILE_TYPE> TILE_TYPES = { TILE_TYPE::ROCK, TILE_TYPE::GRASS, TILE_TYPE::STONE };
 
 Tilemap::Tilemap(SDL_Renderer* renderer):
   m_renderer(renderer),
@@ -78,7 +80,7 @@ void Tilemap::render_to_texture() {
   SDL_RenderClear(m_renderer);
 
   // tiles
-  for (TILE_TYPE tile_type : { TILE_TYPE::ROCK, TILE_TYPE::GRASS, TILE_TYPE::STONE }) {
+  for (TILE_TYPE tile_type : TILE_TYPES) {
     SDL_Point position_clip = POSITIONS_CLIPS.at(tile_type);
     std::vector<SDL_Point> positions = m_tiles[tile_type];
 

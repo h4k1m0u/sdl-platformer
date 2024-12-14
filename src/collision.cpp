@@ -55,3 +55,9 @@ Collision::Sides Collision::find_collision_sides(const SDL_Rect& rect, const std
   point_contact = { -1, -1 };
   return std::make_pair(SideX::NONE, SideY::NONE);
 }
+
+bool Collision::point_in_rect(const SDL_Point& point, const SDL_Rect& rect) {
+  bool in_x = point.x >= rect.x && point.x <= rect.x + rect.w;
+  bool in_y = point.y >= rect.y && point.y <= rect.y + rect.h;
+  return in_x && in_y;
+}

@@ -3,6 +3,7 @@
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_mixer.h>
 
+#include "arrow_buttons.hpp"
 #include "player.hpp"
 #include "fps.hpp"
 #include "constants.hpp"
@@ -23,8 +24,11 @@ Mix_Chunk* sound;
 Tilemap tilemap;
 Player player;
 FPS fps;
+ArrowButtons arrow_buttons;
 
 SDL_Rect camera = { 0, 0, Constants::SCREEN_WIDTH, Constants::SCREEN_HEIGHT };
+
+SDL_Rect rect_touch = { 0, 0, 100, 100 };
 
 /* Free all loaded assets */
 static void free() {
@@ -35,6 +39,7 @@ static void free() {
   tilemap.free();
   player.free();
   fps.free();
+  arrow_buttons.free();
 
   TTF_CloseFont(font);
 
@@ -73,6 +78,19 @@ static void main_loop() {
     else if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_SPACE) {
       Mix_PlayChannel(-1, sound, 0);
     }
+
+    else if (e.type == SDL_FINGERDOWN || e.type == SDL_FINGERMOTION) {
+      rect_touch.x = e.tfinger.x * Constants::SCREEN_WIDTH;
+      rect_touch.y = e.tfinger.y * Constants::SCREEN_HEIGHT;
+    }
+    else if (e.type == SDL_FINGERUP) {
+      rect_touch.x = 0;
+      rect_touch.y = 0;
+    }
+
+    else if (e.type == SDL_MOUSEBUTTONDOWN || e.type == SDL_MOUSEBUTTONUP) {
+      arrow_buttons.handle_event(e);
+    }
   }
 
   if (is_on_ground) {
@@ -104,6 +122,10 @@ static void main_loop() {
   tilemap.render(camera);
   player.render(frame, camera);
   fps.render();
+  arrow_buttons.render();
+
+  SDL_SetRenderDrawColor(renderer, 0xff, 0x0, 0x0, 0xff);
+  SDL_RenderFillRect(renderer, &rect_touch);
 
   SDL_RenderPresent(renderer);
   frame++;
@@ -140,6 +162,9 @@ int main() {
   }
   return 0;
   */
+
+  // arrow buttons (for mobile)
+  arrow_buttons = ArrowButtons(renderer);
 
   // player
   player = Player(renderer, obstacles);
