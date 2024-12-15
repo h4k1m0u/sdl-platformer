@@ -6,6 +6,7 @@ enum class TILE_TYPE : char {
   GRASS = 'G',
   STONE = 'S',
   VOID = ' ',
+  COIN = 'C',
 };
 
 #endif

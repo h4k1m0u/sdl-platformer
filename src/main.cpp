@@ -8,6 +8,7 @@
 #include "fps.hpp"
 #include "constants.hpp"
 #include "tilemap.hpp"
+#include "tilemap_parser.hpp"
 #include "coin.hpp"
 
 #ifdef __EMSCRIPTEN__
@@ -117,7 +118,7 @@ static void main_loop() {
   player.render(frame, camera);
   fps.render();
   arrow_buttons.render();
-  coin.render(frame);
+  coin.render(frame, camera);
 
   SDL_RenderPresent(renderer);
   frame++;
@@ -142,10 +143,13 @@ int main() {
   // SDL_RENDERER_PRESENTVSYNC: sync'ed with screen refresh rate (otherwise fps > 1000)
   renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 
-  // tilemap
-  tilemap = Tilemap(renderer);
-  tilemap.render_to_texture();
-  std::vector<SDL_Rect> obstacles = tilemap.get_bboxes();
+  // parse tilemap
+  TilemapParser tilemap_parser;
+  tilemap_parser.parse();
+  std::vector<SDL_Rect> obstacles = tilemap_parser.get_bboxes();
+  Tiles tiles = tilemap_parser.get_tiles();
+  std::vector<SDL_Point> positions_coins = tilemap_parser.get_coins();
+
   std::cout << "# of grounds: " << obstacles.size() << '\n';
   /*
   for (const SDL_Rect& bbox : obstacles) {
@@ -155,12 +159,16 @@ int main() {
   return 0;
   */
 
+  // tilemap
+  tilemap = Tilemap(renderer);
+  tilemap.render_to_texture(tiles, obstacles);
+
   // arrow buttons (for mobile)
   arrow_buttons = ArrowButtons(renderer);
 
   // characters
   player = Player(renderer, obstacles);
-  coin = Coin(renderer);
+  coin = Coin(renderer, positions_coins);
 
   // load font
   const std::string path_font = "/usr/share/fonts/noto/NotoSerif-Regular.ttf";

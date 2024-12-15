@@ -2,6 +2,9 @@
 #define CONSTANTS_HPP
 
 #include <SDL2/SDL_pixels.h>
+#include <unordered_set>
+
+#include "tile_type.hpp"
 
 namespace Constants {
   const int WIDTH_TILE = 32;
@@ -17,5 +20,8 @@ namespace Constants {
 
   const bool DEBUG = true;
   const SDL_Color COLOR_BBOX = { 0xff, 0, 0, 0xff };
+
+  const std::unordered_set<TILE_TYPE> GROUNDS = { TILE_TYPE::ROCK, TILE_TYPE::GRASS, TILE_TYPE::STONE };
 }
+
 #endif
