@@ -8,8 +8,8 @@ using namespace Constants;
 
 const std::string PATH_TEXTURE = "./assets/arrow-buttons.png";
 
-const int WIDTH_BUTTON = WIDTH_TILE * 2;
-const int HEIGHT_BUTTON = WIDTH_TILE * 2;
+const int WIDTH_BUTTON = WIDTH_TILE * 4;
+const int HEIGHT_BUTTON = WIDTH_TILE * 4;
 
 const std::unordered_map<Button, SDL_Point> POSITIONS_CLIPS = {
   { Button::LEFT,  { 0, 0 } },

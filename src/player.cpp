@@ -1,4 +1,4 @@
-#include <iostream>
+// #include <iostream>
 #include <algorithm>
 
 #include "player.hpp"
@@ -135,9 +135,11 @@ void Player::fall() {
   // collision detection performed once for grids above/below
   SDL_Point point_contact;
   auto [ side_x, side_y ] = check_collision(point_contact);
+  /*
   std::cout << "fall():"
             << " m_velocity_x: " << m_velocity_x
             << " m_velocity_y: " << m_velocity_y << '\n';
+  */
 
   int y_new = m_position.y + m_velocity_y;
 
@@ -166,10 +168,12 @@ void Player::jump() {
 
   SDL_Point point_contact;
   auto [ side_x, side_y ] = check_collision(point_contact);
+  /*
   std::cout << "--- JUMPING ---:"
             << " m_velocity_x: " << m_velocity_x
             << " m_velocity_y: " << m_velocity_y
             << '\n';
+  */
 
   int y_new = m_position.y + m_velocity_y;
   if (side_y == Collision::SideY::BELOW) {

@@ -8,6 +8,7 @@
 #include "fps.hpp"
 #include "constants.hpp"
 #include "tilemap.hpp"
+#include "coin.hpp"
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
@@ -25,6 +26,7 @@ Tilemap tilemap;
 Player player;
 FPS fps;
 ArrowButtons arrow_buttons;
+Coin coin;
 
 SDL_Rect camera = { 0, 0, Constants::SCREEN_WIDTH, Constants::SCREEN_HEIGHT };
 
@@ -38,6 +40,7 @@ static void free() {
   player.free();
   fps.free();
   arrow_buttons.free();
+  coin.free();
 
   TTF_CloseFont(font);
 
@@ -114,6 +117,7 @@ static void main_loop() {
   player.render(frame, camera);
   fps.render();
   arrow_buttons.render();
+  coin.render(frame);
 
   SDL_RenderPresent(renderer);
   frame++;
@@ -154,8 +158,9 @@ int main() {
   // arrow buttons (for mobile)
   arrow_buttons = ArrowButtons(renderer);
 
-  // player
+  // characters
   player = Player(renderer, obstacles);
+  coin = Coin(renderer);
 
   // load font
   const std::string path_font = "/usr/share/fonts/noto/NotoSerif-Regular.ttf";
