@@ -1,7 +1,7 @@
 #include "collision.hpp"
 
 /* Collision detection between two AABBOX */
-SDL_Point Collision::rect_to_rect(const SDL_Rect& rect1, const SDL_Rect& rect2) {
+bool Collision::rect_to_rect(const SDL_Rect& rect1, const SDL_Rect& rect2) {
   SDL_Point min1 = { rect1.x, rect1.y };
   SDL_Point max1 = { rect1.x + rect1.w, rect1.y + rect1.h };
 
@@ -10,9 +10,8 @@ SDL_Point Collision::rect_to_rect(const SDL_Rect& rect1, const SDL_Rect& rect2) 
 
   bool collides_x = min2.x <= max1.x && max2.x >= min1.x;
   bool collides_y = min2.y <= max1.y && max2.y >= min1.y;
-  SDL_Point collides = { collides_x, collides_y };
 
-  return collides;
+  return collides_x && collides_y;
 }
 
 /**
@@ -23,9 +22,9 @@ SDL_Point Collision::rect_to_rect(const SDL_Rect& rect1, const SDL_Rect& rect2) 
 Collision::Sides Collision::find_collision_sides(const SDL_Rect& rect, const std::vector<SDL_Rect>& rects, SDL_Point& point_contact) {
 
   for (const SDL_Rect& rect_other : rects) {
-    SDL_Point collides = rect_to_rect(rect, rect_other);
+    bool collides = rect_to_rect(rect, rect_other);
 
-    if (!collides.x || !collides.y)
+    if (!collides)
       continue;
 
     point_contact = { -1, -1 };

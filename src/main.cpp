@@ -9,7 +9,7 @@
 #include "constants.hpp"
 #include "tilemap.hpp"
 #include "tilemap_parser.hpp"
-#include "coin.hpp"
+#include "coins.hpp"
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
@@ -27,7 +27,7 @@ Tilemap tilemap;
 Player player;
 FPS fps;
 ArrowButtons arrow_buttons;
-Coin coin;
+Coins coins;
 
 SDL_Rect camera = { 0, 0, Constants::SCREEN_WIDTH, Constants::SCREEN_HEIGHT };
 
@@ -41,7 +41,7 @@ static void free() {
   player.free();
   fps.free();
   arrow_buttons.free();
-  coin.free();
+  coins.free();
 
   TTF_CloseFont(font);
 
@@ -56,11 +56,23 @@ static void free() {
 
 static void main_loop() {
   static int frame = 0;
+  static int score = 0;
 
   // physics (collision detection between player & ground tiles)
   SDL_Point point_contact;
-  auto [ side_x, side_y ] = player.check_collision(point_contact);
+  auto [ side_x, side_y ] = player.check_collision_ground(point_contact);
   bool is_on_ground = (side_y == Collision::SideY::ABOVE);
+
+  // collision with coins
+  int key_coin;
+  std::unordered_map<int, SDL_Rect> bboxes_coins = coins.get_bboxes();
+  bool collides_coin = player.check_collision_coins(bboxes_coins, key_coin);
+
+  if (collides_coin) {
+    coins.destroy(key_coin);
+    score++;
+    std::cout << "Collides with coin " << key_coin << " - Score: " << score << '\n';
+  }
 
   // std::cout << frame << " main loop(): " << "on_ground: " << is_on_ground << " point_contact.y: " << point_contact.y << '\n';
 
@@ -102,7 +114,7 @@ static void main_loop() {
 
   // std::cout << frame << " camera: " << camera.x << " " << camera.y << '\n';
 
-  // TODO: too many calls to player.check_collision() ???
+  // TODO: too many calls to player.check_collision_ground() ???
   // TODO: player.move() ???
 
   // recalculate fps
@@ -118,7 +130,7 @@ static void main_loop() {
   player.render(frame, camera);
   fps.render();
   arrow_buttons.render();
-  coin.render(frame, camera);
+  coins.render(frame, camera);
 
   SDL_RenderPresent(renderer);
   frame++;
@@ -168,7 +180,7 @@ int main() {
 
   // characters
   player = Player(renderer, obstacles);
-  coin = Coin(renderer, positions_coins);
+  coins = Coins(renderer, positions_coins);
 
   // load font
   const std::string path_font = "/usr/share/fonts/noto/NotoSerif-Regular.ttf";

@@ -39,7 +39,8 @@ public:
   void render(int frame, const SDL_Rect& camera);
   void free();
 
-  Collision::Sides check_collision(SDL_Point& point_contact);
+  Collision::Sides check_collision_ground(SDL_Point& point_contact);
+  bool check_collision_coins(const std::unordered_map<int, SDL_Rect>& bboxes_coins, int& key);
   void jump();
   void fall();
   SDL_Point get_center() const;

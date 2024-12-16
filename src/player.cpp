@@ -113,17 +113,36 @@ void Player::handle_event(const Uint8* key_states, const std::unordered_map<Butt
  * Check collision of next position
  * Used to prevent sprite from penetrating ground from top (on fall) or bottom (on jump)
  */
-Collision::Sides Player::check_collision(SDL_Point& point_contact) {
+Collision::Sides Player::check_collision_ground(SDL_Point& point_contact) {
   SDL_Rect bbox_new = m_bbox;
   bbox_new.y += m_velocity_y;
   Collision::Sides sides = Collision::find_collision_sides(bbox_new, m_obstacles, point_contact);
   /*
-  std::cout << "check_collision(): sides: "
+  std::cout << "check_collision_ground(): sides: "
             << static_cast<char>(sides.first) << static_cast<char>(sides.second)
             << '\n';
   */
 
   return sides;
+}
+
+/**
+ * @return key Key corresp. to coin to destroy
+ */
+bool Player::check_collision_coins(const std::unordered_map<int, SDL_Rect>& bboxes_coins, int& key) {
+  bool collides = false;
+  key = -1;
+
+  for (const auto& [ k, bbox_coin ] : bboxes_coins) {
+    collides = Collision::rect_to_rect(m_bbox, bbox_coin);
+
+    if (collides) {
+      key = k;
+      break;
+    }
+  }
+
+  return collides;
 }
 
 /* Ease-In (acceleration) */
@@ -134,7 +153,7 @@ void Player::fall() {
 
   // collision detection performed once for grids above/below
   SDL_Point point_contact;
-  auto [ side_x, side_y ] = check_collision(point_contact);
+  auto [ side_x, side_y ] = check_collision_ground(point_contact);
   /*
   std::cout << "fall():"
             << " m_velocity_x: " << m_velocity_x
@@ -167,7 +186,7 @@ void Player::jump() {
   m_velocity_y = -IMPULSE_FACTOR_Y * SPEED;
 
   SDL_Point point_contact;
-  auto [ side_x, side_y ] = check_collision(point_contact);
+  auto [ side_x, side_y ] = check_collision_ground(point_contact);
   /*
   std::cout << "--- JUMPING ---:"
             << " m_velocity_x: " << m_velocity_x
