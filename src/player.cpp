@@ -1,5 +1,6 @@
 // #include <iostream>
 #include <algorithm>
+#include <array>
 
 #include "player.hpp"
 #include "constants.hpp"
@@ -66,7 +67,6 @@ void Player::move_right() {
   m_direction = Direction::RIGHT;
   m_velocity_x = SPEED;
 }
-
 
 /**
  * Allow horizontal movement only if on ground
@@ -209,7 +209,6 @@ void Player::jump() {
 void Player::render(int frame, const SDL_Rect& camera) {
   if (m_direction != Direction::NONE) {
     // slow down animation (change image every 9 frames)
-    // int frame_player = frame % N_FRAMES;
     int frame_player = (frame / (N_FRAMES * 3)) % N_FRAMES;
     m_position_clip = m_positions_clips[m_direction][frame_player];
   }

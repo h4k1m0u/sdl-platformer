@@ -16,6 +16,7 @@ $ pacman -Sy sdl2 sdl2_image sdl2_ttf sdl2_mixer
 - [Tiles][tiles]
 - [Arrow buttons][arrow-buttons]
 - [Coin][coin]
+- [Zombie][zombie]
 
 [player-sprite]: https://opengameart.org/content/werewolf-lpc
 [music]: https://opengameart.org/content/caketown-cuteplayful
@@ -23,6 +24,7 @@ $ pacman -Sy sdl2 sdl2_image sdl2_ttf sdl2_mixer
 [tiles]: https://opengameart.org/content/simple-platformer-tileset
 [arrow-buttons]: https://opengameart.org/content/mobile-ui-buttons-arrows-and-shoot
 [coin]: https://opengameart.org/content/pixel-coins-asset
+[zombie]: https://opengameart.org/content/zombie-and-skeleton-32x48
 
 # Bear
 Bear is used to build project & generate `compile_commands.json` for YCM linter:

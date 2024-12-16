@@ -1,4 +1,6 @@
 #include "coins.hpp"
+#include "drawer.hpp"
+#include "constants.hpp"
 
 const std::string PATH_TEXTURE = "./assets/coin.png";
 
@@ -6,6 +8,7 @@ const int WIDTH_COIN = 18;
 const int HEIGHT_COIN = 20;
 
 Coins::Coins(SDL_Renderer* renderer, const std::vector<SDL_Point>& positions):
+  m_renderer(renderer),
   m_texture(PATH_TEXTURE, { WIDTH_COIN, HEIGHT_COIN }, renderer)
 {
   calculate_bboxes(positions);
@@ -43,6 +46,11 @@ void Coins::render(int frame, const SDL_Rect& camera) {
   for (const auto& [ key, bbox ] : m_bboxes) {
     SDL_Point position_rel = { bbox.x - camera.x, bbox.y - camera.y };
     m_texture.render(position_rel, position_clip);
+
+    // show bbox in debug mode
+    if (Constants::DEBUG) {
+      Drawer::draw_bbox(m_renderer, bbox, &camera);
+    }
   }
 }
 

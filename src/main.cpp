@@ -10,6 +10,7 @@
 #include "tilemap.hpp"
 #include "tilemap_parser.hpp"
 #include "coins.hpp"
+#include "enemies.hpp"
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
@@ -28,6 +29,7 @@ Player player;
 FPS fps;
 ArrowButtons arrow_buttons;
 Coins coins;
+Enemies enemies;
 
 SDL_Rect camera = { 0, 0, Constants::SCREEN_WIDTH, Constants::SCREEN_HEIGHT };
 
@@ -42,6 +44,7 @@ static void free() {
   fps.free();
   arrow_buttons.free();
   coins.free();
+  enemies.free();
 
   TTF_CloseFont(font);
 
@@ -131,6 +134,7 @@ static void main_loop() {
   fps.render();
   arrow_buttons.render();
   coins.render(frame, camera);
+  enemies.render(frame);
 
   SDL_RenderPresent(renderer);
   frame++;
@@ -158,13 +162,14 @@ int main() {
   // parse tilemap
   TilemapParser tilemap_parser;
   tilemap_parser.parse();
-  std::vector<SDL_Rect> obstacles = tilemap_parser.get_bboxes();
-  Tiles tiles = tilemap_parser.get_tiles();
+  std::vector<SDL_Rect> bboxes_ground = tilemap_parser.get_bboxes_ground();
+  Tiles tiles_ground = tilemap_parser.get_tiles_ground();
   std::vector<SDL_Point> positions_coins = tilemap_parser.get_coins();
+  std::vector<PatrolTrajectory> patrol_trajectories = tilemap_parser.get_patrol_trajectories();
 
-  std::cout << "# of grounds: " << obstacles.size() << '\n';
+  std::cout << "# of grounds: " << bboxes_ground.size() << '\n';
   /*
-  for (const SDL_Rect& bbox : obstacles) {
+  for (const SDL_Rect& bbox : bboxes_ground) {
     std::cout << "Obstacle: " << bbox.x << " " << bbox.y << " "
               << bbox.w << " " << bbox.h << '\n';
   }
@@ -173,14 +178,15 @@ int main() {
 
   // tilemap
   tilemap = Tilemap(renderer);
-  tilemap.render_to_texture(tiles, obstacles);
+  tilemap.render_to_texture(tiles_ground, bboxes_ground);
 
   // arrow buttons (for mobile)
   arrow_buttons = ArrowButtons(renderer);
 
   // characters
-  player = Player(renderer, obstacles);
+  player = Player(renderer, bboxes_ground);
   coins = Coins(renderer, positions_coins);
+  enemies = Enemies(renderer, patrol_trajectories);
 
   // load font
   const std::string path_font = "/usr/share/fonts/noto/NotoSerif-Regular.ttf";

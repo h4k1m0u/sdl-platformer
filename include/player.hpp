@@ -2,19 +2,16 @@
 #define PLAYER_HPP
 
 #include <unordered_map>
-#include <array>
 #include <vector>
 
 #include "collision.hpp"
 #include "texture.hpp"
-#include "direction.hpp"
 #include "button.hpp"
+#include "types.hpp"
 
 class Player {
 private:
   static const int N_FRAMES = 3;
-  using Frames = std::array<SDL_Point, N_FRAMES>;
-  using Clips = std::unordered_map<Direction, Frames>;
 
   std::vector<SDL_Rect> m_obstacles;
   SDL_Renderer* m_renderer;
@@ -24,7 +21,7 @@ private:
   int m_velocity_x;
   int m_velocity_y;
   Direction m_direction;
-  Clips m_positions_clips;
+  Clips<N_FRAMES> m_positions_clips;
   SDL_Rect m_bbox;
 
   void calculate_positions_clips();

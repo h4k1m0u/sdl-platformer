@@ -14,19 +14,22 @@ public:
   TilemapParser();
   void parse();
 
-  Tiles get_tiles() const;
-  std::vector<SDL_Rect> get_bboxes() const;
+  Tiles get_tiles_ground() const;
+  std::vector<SDL_Rect> get_bboxes_ground() const;
   std::vector<SDL_Point> get_coins() const;
+  std::vector<PatrolTrajectory> get_patrol_trajectories() const;
 
 private:
-  std::unordered_map<TILE_TYPE, std::vector<SDL_Point>> m_tiles;
-  std::vector<SDL_Rect> m_bboxes;
+  std::unordered_map<TILE_TYPE, std::vector<SDL_Point>> m_tiles_ground;
+  std::vector<SDL_Rect> m_bboxes_ground;
   std::vector<SDL_Point> m_coins;
+  std::vector<PatrolTrajectory> m_patrol_trajectories;
   int m_n_cols;
 
   void parse_voids(const std::string& line, int& i_col);
-  void parse_coins(const std::string& line, int i_row, int& i_col);
   void parse_grounds(const std::string& line, int i_row, int& i_col);
+  void parse_coin(const std::string& line, int i_row, int& i_col);
+  void parse_patrol_point(const std::string& line, int i_row, int& i_col, PatrolTrajectory& trajectory);
 };
 
 #endif // TILEMAP_PARSER_HPP
