@@ -13,7 +13,7 @@ class Player {
 private:
   static const int N_FRAMES = 3;
 
-  std::vector<SDL_Rect> m_obstacles;
+  std::vector<SDL_Rect> m_bboxes_ground;
   SDL_Renderer* m_renderer;
   Texture m_texture;
   SDL_Point m_position;
@@ -31,13 +31,13 @@ private:
 
 public:
   Player() = default;
-  Player(SDL_Renderer* renderer, const std::vector<SDL_Rect>& obstacles);
+  Player(SDL_Renderer* renderer, const std::vector<SDL_Rect>& bboxes_ground);
   void handle_event(const Uint8* key_states, const std::unordered_map<Button, bool>& clicked);
   void render(int frame, const SDL_Rect& camera);
   void free();
 
   Collision::Sides check_collision_ground(SDL_Point& point_contact);
-  bool check_collision_coins(const std::unordered_map<int, SDL_Rect>& bboxes_coins, int& key);
+  bool check_collision_entities(const std::unordered_map<int, SDL_Rect>& bboxes_entities, int& key);
   void jump();
   void fall();
   SDL_Point get_center() const;

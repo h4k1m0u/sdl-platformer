@@ -107,18 +107,18 @@ void TilemapParser::parse() {
   }
 }
 
-Tiles TilemapParser::get_tiles_ground() const {
+const Tiles& TilemapParser::get_tiles_ground() const {
   return m_tiles_ground;
 }
 
-std::vector<SDL_Rect> TilemapParser::get_bboxes_ground() const {
+const std::vector<SDL_Rect>& TilemapParser::get_bboxes_ground() const {
   return m_bboxes_ground;
 }
 
-std::vector<SDL_Point> TilemapParser::get_coins() const {
+const std::vector<SDL_Point>& TilemapParser::get_coins() const {
   return m_coins;
 }
 
-std::vector<PatrolTrajectory> TilemapParser::get_patrol_trajectories() const {
+const std::vector<PatrolTrajectory>& TilemapParser::get_patrol_trajectories() const {
   return m_patrol_trajectories;
 }

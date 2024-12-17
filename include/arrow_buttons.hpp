@@ -12,7 +12,7 @@ public:
   ArrowButtons(SDL_Renderer* renderer);
 
   void handle_event(const SDL_Event& e);
-  std::unordered_map<Button, bool> get_clicked() const;
+  const std::unordered_map<Button, bool>& get_clicked() const;
   void render();
   void free();
 

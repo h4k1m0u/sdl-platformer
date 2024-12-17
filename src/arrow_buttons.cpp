@@ -130,7 +130,7 @@ void ArrowButtons::handle_event(const SDL_Event& e) {
   }
 }
 
-std::unordered_map<Button, bool> ArrowButtons::get_clicked() const {
+const std::unordered_map<Button, bool>& ArrowButtons::get_clicked() const {
   return m_clicked;
 }
 

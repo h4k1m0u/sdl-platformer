@@ -14,10 +14,10 @@ public:
   TilemapParser();
   void parse();
 
-  Tiles get_tiles_ground() const;
-  std::vector<SDL_Rect> get_bboxes_ground() const;
-  std::vector<SDL_Point> get_coins() const;
-  std::vector<PatrolTrajectory> get_patrol_trajectories() const;
+  const Tiles& get_tiles_ground() const;
+  const std::vector<SDL_Rect>& get_bboxes_ground() const;
+  const std::vector<SDL_Point>& get_coins() const;
+  const std::vector<PatrolTrajectory>& get_patrol_trajectories() const;
 
 private:
   std::unordered_map<TILE_TYPE, std::vector<SDL_Point>> m_tiles_ground;

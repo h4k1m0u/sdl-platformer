@@ -61,15 +61,16 @@ static void main_loop() {
   static int frame = 0;
   static int score = 0;
 
-  // physics (collision detection between player & ground tiles)
+  /********** Physics **********/
+  // collision detection between player & ground tiles
   SDL_Point point_contact;
   auto [ side_x, side_y ] = player.check_collision_ground(point_contact);
   bool is_on_ground = (side_y == Collision::SideY::ABOVE);
 
   // collision with coins
   int key_coin;
-  std::unordered_map<int, SDL_Rect> bboxes_coins = coins.get_bboxes();
-  bool collides_coin = player.check_collision_coins(bboxes_coins, key_coin);
+  const std::unordered_map<int, SDL_Rect>& bboxes_coins = coins.get_bboxes();
+  bool collides_coin = player.check_collision_entities(bboxes_coins, key_coin);
 
   if (collides_coin) {
     coins.destroy(key_coin);
@@ -77,8 +78,19 @@ static void main_loop() {
     std::cout << "Collides with coin " << key_coin << " - Score: " << score << '\n';
   }
 
+  // collision with enemies
+  int key_enemy;
+  const std::unordered_map<int, SDL_Rect>& bboxes_enemies = enemies.get_bboxes();
+  bool collides_enemy = player.check_collision_entities(bboxes_enemies, key_enemy);
+
+  if (collides_enemy) {
+    enemies.destroy(key_enemy);
+    std::cout << "Collides with enemy " << key_enemy << '\n';
+  }
+
   // std::cout << frame << " main loop(): " << "on_ground: " << is_on_ground << " point_contact.y: " << point_contact.y << '\n';
 
+  /********** Input events **********/
   // process even queue once every frame
   SDL_Event e;
 
@@ -104,12 +116,13 @@ static void main_loop() {
 
   if (is_on_ground) {
     const Uint8* keys_states = SDL_GetKeyboardState(NULL);
-    std::unordered_map<Button, bool> clicked = arrow_buttons.get_clicked();
+    const std::unordered_map<Button, bool>& clicked = arrow_buttons.get_clicked();
     player.handle_event(keys_states, clicked);
   } else {
     player.fall();
   }
 
+  /********** Rendering **********/
   // camera follows player (centered around it)
   SDL_Point center_player = player.get_center();
   camera.x = std::clamp(center_player.x - Constants::SCREEN_WIDTH/2, 0, Constants::LEVEL_WIDTH - Constants::SCREEN_WIDTH);
@@ -162,10 +175,10 @@ int main() {
   // parse tilemap
   TilemapParser tilemap_parser;
   tilemap_parser.parse();
-  std::vector<SDL_Rect> bboxes_ground = tilemap_parser.get_bboxes_ground();
-  Tiles tiles_ground = tilemap_parser.get_tiles_ground();
-  std::vector<SDL_Point> positions_coins = tilemap_parser.get_coins();
-  std::vector<PatrolTrajectory> patrol_trajectories = tilemap_parser.get_patrol_trajectories();
+  const std::vector<SDL_Rect>& bboxes_ground = tilemap_parser.get_bboxes_ground();
+  const Tiles& tiles_ground = tilemap_parser.get_tiles_ground();
+  const std::vector<SDL_Point>& positions_coins = tilemap_parser.get_coins();
+  const std::vector<PatrolTrajectory>& patrol_trajectories = tilemap_parser.get_patrol_trajectories();
 
   std::cout << "# of grounds: " << bboxes_ground.size() << '\n';
   /*

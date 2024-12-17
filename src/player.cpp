@@ -20,13 +20,13 @@ const int SPEED = 4;
 const int GRAVITY = 1;
 const int IMPULSE_FACTOR_Y = 4;
 
-Player::Player(SDL_Renderer* renderer, const std::vector<SDL_Rect>& obstacles):
+Player::Player(SDL_Renderer* renderer, const std::vector<SDL_Rect>& bboxes_ground):
   // TODO: no need for this if collision detection made external???
-  m_obstacles(obstacles),
+  m_bboxes_ground(bboxes_ground),
 
   m_renderer(renderer),
   m_texture(PATH_TEXTURE, { WIDTH, HEIGHT }, renderer),
-  m_position({ 100, 50 }),
+  m_position({ 200, 50 }),
   m_position_clip({ 0, 0 }),
   m_velocity_x(0),
   m_velocity_y(0),
@@ -116,7 +116,7 @@ void Player::handle_event(const Uint8* key_states, const std::unordered_map<Butt
 Collision::Sides Player::check_collision_ground(SDL_Point& point_contact) {
   SDL_Rect bbox_new = m_bbox;
   bbox_new.y += m_velocity_y;
-  Collision::Sides sides = Collision::find_collision_sides(bbox_new, m_obstacles, point_contact);
+  Collision::Sides sides = Collision::find_collision_sides(bbox_new, m_bboxes_ground, point_contact);
   /*
   std::cout << "check_collision_ground(): sides: "
             << static_cast<char>(sides.first) << static_cast<char>(sides.second)
@@ -127,14 +127,14 @@ Collision::Sides Player::check_collision_ground(SDL_Point& point_contact) {
 }
 
 /**
- * @return key Key corresp. to coin to destroy
+ * @return key Key corresp. to coin/enemy to destroy
  */
-bool Player::check_collision_coins(const std::unordered_map<int, SDL_Rect>& bboxes_coins, int& key) {
+bool Player::check_collision_entities(const std::unordered_map<int, SDL_Rect>& bboxes_entities, int& key) {
   bool collides = false;
   key = -1;
 
-  for (const auto& [ k, bbox_coin ] : bboxes_coins) {
-    collides = Collision::rect_to_rect(m_bbox, bbox_coin);
+  for (const auto& [ k, bbox_entity ] : bboxes_entities) {
+    collides = Collision::rect_to_rect(m_bbox, bbox_entity);
 
     if (collides) {
       key = k;

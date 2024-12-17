@@ -11,9 +11,9 @@ class Coins {
 public:
   Coins() = default;
   Coins(SDL_Renderer* renderer, const std::vector<SDL_Point>& positions);
-  std::unordered_map<int, SDL_Rect> get_bboxes() const;
+  const std::unordered_map<int, SDL_Rect>& get_bboxes() const;
   void render(int frame, const SDL_Rect& camera);
-  void destroy(int i);
+  void destroy(int key);
   void free();
 
 private:

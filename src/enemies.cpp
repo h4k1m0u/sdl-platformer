@@ -49,19 +49,27 @@ void Enemies::calculate_positions_clips() {
   }
 }
 
+const std::unordered_map<int, SDL_Rect>& Enemies::get_bboxes() const {
+  return m_bboxes;
+}
+
+/* hashmaps have constant-time complexity for removal (linear for vectors) */
+void Enemies::destroy(int key) {
+  m_bboxes.erase(key);
+}
+
 void Enemies::render(int frame, const SDL_Rect& camera) {
   // slow down animation (change image every 9 frames)
   int frame_coin = (frame / (N_FRAMES * 3)) % N_FRAMES;
 
-  for (size_t key = 0; key < m_n_enemies; ++key) {
-    SDL_Rect& bbox = m_bboxes[key];
-    SDL_Point position = { bbox.x, bbox.y };
-
+  for (auto& [ key, bbox ] : m_bboxes) {
     const auto& [ start, end ] = m_patrol_trajectories[key];
     Direction& direction = m_directions[key];
     int& velocity_x = m_velocities_x[key];
 
     // change direction when reaching patrol points
+    SDL_Point position = { bbox.x, bbox.y };
+
     if (position.x >= end.x && direction == Direction::RIGHT) {
       direction = Direction::LEFT;
       velocity_x = -SPEED;
