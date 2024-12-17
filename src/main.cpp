@@ -134,7 +134,7 @@ static void main_loop() {
   fps.render();
   arrow_buttons.render();
   coins.render(frame, camera);
-  enemies.render(frame);
+  enemies.render(frame, camera);
 
   SDL_RenderPresent(renderer);
   frame++;
