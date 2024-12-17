@@ -1,5 +1,6 @@
 # Documentation: https://www.gnu.org/software/make/manual/make.html
 # Tutorial: https://makefiletutorial.com/#makefile-cookbook
+# Automatic makefile dependencies: https://sparkyandsusi.wordpress.com/2016/11/26/automatic-makefile-dependencies/
 
 SRC_DIR := src
 INCLUDE_DIR := include
@@ -8,8 +9,7 @@ BUILD_DIR := build
 SRC_FILES := $(shell find $(SRC_DIR) -name "*.cpp")
 HEADER_FILES := $(shell find $(INCLUDE_DIR) -name "*.hpp")
 OBJECTS_FILES := $(SRC_FILES:$(SRC_DIR)/%.cpp=$(BUILD_DIR)/%.o)
-
-CONFIG_HPP := $(INCLUDE_DIR)/constants.hpp
+DEPS_FILES := $(OBJECTS_FILES:.o=.d)
 
 ASSETS_SRC_DIR := assets
 ASSETS_DEST_DIR := $(BUILD_DIR)/assets
@@ -19,23 +19,27 @@ ASSETS_SRC_FILES := $(shell find $(ASSETS_SRC_DIR) -mindepth 1)
 # Compiling & linking
 ##################################################
 
+# adding a new member field to included class headers changes memory layout => segfault if main not rebuilt
+# -MMD: generate dependencies (*.d files) automatically
 CPPFLAGS := -I$(INCLUDE_DIR)
-CXXFLAGS := -std=c++20 -Wall -Wextra -Werror
+CXXFLAGS := -std=c++20 -Wall -Wextra -Werror -MMD
 LDFLAGS := -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer
 
 # separate compilation from linking to recompile only modified file
 $(BUILD_DIR)/main: $(OBJECTS_FILES)
 	$(CXX) $(LDFLAGS) -o$@ $^
 
+# initial build & generate deps files
 # separate translation units to compile them in parallel (faster)
-$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp $(INCLUDE_DIR)/%.hpp $(CONFIG_HPP)
-	mkdir -p $(BUILD_DIR)
+# Order-only prerequisites (right of pipe) won't run rule if dependency timestamp updated (i.e. run only once)
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp | $(BUILD_DIR)
 	$(CXX) -c $(CPPFLAGS) $(CXXFLAGS) -o$@ $<
 
-# most specific rules used for main.cpp, not the above one (no header file)
-$(BUILD_DIR)/main.o: $(SRC_DIR)/main.cpp $(CONFIG_HPP)
+$(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
-	$(CXX) -c $(CPPFLAGS) $(CXXFLAGS) -o$@ $<
+
+# more specific rules loaded from dependency files (for subsequent builds)
+-include $(DEPS_FILES)
 
 ##################################################
 # Assets
