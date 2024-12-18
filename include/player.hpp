@@ -20,6 +20,7 @@ private:
   SDL_Point m_position_clip;
   int m_velocity_x;
   int m_velocity_y;
+  int m_n_lives;
   Direction m_direction;
   Clips<N_FRAMES> m_positions_clips;
   SDL_Rect m_bbox;
@@ -37,10 +38,14 @@ public:
   void free();
 
   Collision::Sides check_collision_ground(SDL_Point& point_contact);
-  bool check_collision_entities(const std::unordered_map<int, SDL_Rect>& bboxes_entities, int& key);
+  bool check_collision_entities(const BboxesMap& bboxes_entities, int& key);
+  bool check_collision_enemies(const BboxesMap& bboxes_entities, int& key, bool& kill_enemy);
+
   void jump();
   void fall();
   SDL_Point get_center() const;
+  int get_n_lives() const;
+  bool is_alive() const;
 };
 
 #endif

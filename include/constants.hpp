@@ -22,6 +22,8 @@ namespace Constants {
   const SDL_Color COLOR_BBOX = { 0xff, 0, 0, 0xff };
 
   const std::unordered_set<TILE_TYPE> GROUNDS = { TILE_TYPE::ROCK, TILE_TYPE::GRASS, TILE_TYPE::STONE };
+
+  const int N_LIVES = 3;
 }
 
 #endif

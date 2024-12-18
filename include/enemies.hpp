@@ -8,7 +8,7 @@ class Enemies {
 public:
   Enemies() = default;
   Enemies(SDL_Renderer* renderer, const std::vector<PatrolTrajectory>& patrol_trajectories);
-  const std::unordered_map<int, SDL_Rect>& get_bboxes() const;
+  const BboxesMap& get_bboxes() const;
   void render(int frame, const SDL_Rect& camera);
   void destroy(int key);
   void free();
@@ -20,7 +20,7 @@ private:
   size_t m_n_enemies;
   std::vector<Direction> m_directions;
   std::vector<int> m_velocities_x;
-  std::unordered_map<int, SDL_Rect> m_bboxes;
+  BboxesMap m_bboxes;
 
   static const int N_FRAMES = 3;
   Clips<N_FRAMES> m_positions_clips;

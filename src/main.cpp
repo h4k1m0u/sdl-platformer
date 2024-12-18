@@ -5,12 +5,12 @@
 
 #include "arrow_buttons.hpp"
 #include "player.hpp"
-#include "fps.hpp"
 #include "constants.hpp"
 #include "tilemap.hpp"
 #include "tilemap_parser.hpp"
 #include "coins.hpp"
 #include "enemies.hpp"
+#include "text.hpp"
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
@@ -26,10 +26,10 @@ Mix_Chunk* sound;
 
 Tilemap tilemap;
 Player player;
-FPS fps;
 ArrowButtons arrow_buttons;
 Coins coins;
 Enemies enemies;
+Text text;
 
 SDL_Rect camera = { 0, 0, Constants::SCREEN_WIDTH, Constants::SCREEN_HEIGHT };
 
@@ -41,10 +41,11 @@ static void free() {
 
   tilemap.free();
   player.free();
-  fps.free();
   arrow_buttons.free();
   coins.free();
   enemies.free();
+  enemies.free();
+  text.free();
 
   TTF_CloseFont(font);
 
@@ -57,9 +58,23 @@ static void free() {
   SDL_Quit();
 }
 
+static void quit_game() {
+  free();
+
+  #ifdef __EMSCRIPTEN__
+    emscripten_cancel_main_loop();  /* this should "kill" the app. */
+  #else
+    std::exit(0);
+  #endif
+}
+
 static void main_loop() {
   static int frame = 0;
   static int score = 0;
+
+  if (!player.is_alive()) {
+    quit_game();
+  }
 
   /********** Physics **********/
   // collision detection between player & ground tiles
@@ -69,23 +84,31 @@ static void main_loop() {
 
   // collision with coins
   int key_coin;
-  const std::unordered_map<int, SDL_Rect>& bboxes_coins = coins.get_bboxes();
+  const BboxesMap& bboxes_coins = coins.get_bboxes();
   bool collides_coin = player.check_collision_entities(bboxes_coins, key_coin);
 
   if (collides_coin) {
     coins.destroy(key_coin);
     score++;
+    text.set_score(score);
     std::cout << "Collides with coin " << key_coin << " - Score: " << score << '\n';
   }
 
   // collision with enemies
   int key_enemy;
-  const std::unordered_map<int, SDL_Rect>& bboxes_enemies = enemies.get_bboxes();
-  bool collides_enemy = player.check_collision_entities(bboxes_enemies, key_enemy);
+  const BboxesMap& bboxes_enemies = enemies.get_bboxes();
+  bool kill_enemy;
+  bool collides_enemy = player.check_collision_enemies(bboxes_enemies, key_enemy, kill_enemy);
 
   if (collides_enemy) {
-    enemies.destroy(key_enemy);
-    std::cout << "Collides with enemy " << key_enemy << '\n';
+    std::cout << "Collides with enemy " << key_enemy << " kill_enemy: " << kill_enemy << '\n';
+
+    if (kill_enemy) {
+      enemies.destroy(key_enemy);
+    } else {
+      int n_lives = player.get_n_lives();
+      text.set_lives(n_lives);
+    }
   }
 
   // std::cout << frame << " main loop(): " << "on_ground: " << is_on_ground << " point_contact.y: " << point_contact.y << '\n';
@@ -96,18 +119,11 @@ static void main_loop() {
 
   while (SDL_PollEvent(&e)) {
     if (e.type == SDL_QUIT || (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)) {
-      free();
-
-      #ifdef __EMSCRIPTEN__
-        emscripten_cancel_main_loop();  /* this should "kill" the app. */
-      #else
-        std::exit(0);
-      #endif
+      quit_game();
     }
     else if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_SPACE) {
       Mix_PlayChannel(-1, sound, 0);
     }
-
     else if (e.type == SDL_MOUSEBUTTONDOWN || e.type == SDL_MOUSEBUTTONUP ||
              e.type == SDL_FINGERDOWN || e.type == SDL_FINGERUP) {
       arrow_buttons.handle_event(e);
@@ -133,21 +149,16 @@ static void main_loop() {
   // TODO: too many calls to player.check_collision_ground() ???
   // TODO: player.move() ???
 
-  // recalculate fps
-  if (frame % 10 == 0) {
-    fps.calculate(frame);
-  }
-
   // clear window
   SDL_SetRenderDrawColor(renderer, 0xff, 0xff, 0xff, 0xff);
   SDL_RenderClear(renderer);
 
   tilemap.render(camera);
   player.render(frame, camera);
-  fps.render();
   arrow_buttons.render();
   coins.render(frame, camera);
   enemies.render(frame, camera);
+  text.render();
 
   SDL_RenderPresent(renderer);
   frame++;
@@ -179,15 +190,7 @@ int main() {
   const Tiles& tiles_ground = tilemap_parser.get_tiles_ground();
   const std::vector<SDL_Point>& positions_coins = tilemap_parser.get_coins();
   const std::vector<PatrolTrajectory>& patrol_trajectories = tilemap_parser.get_patrol_trajectories();
-
   std::cout << "# of grounds: " << bboxes_ground.size() << '\n';
-  /*
-  for (const SDL_Rect& bbox : bboxes_ground) {
-    std::cout << "Obstacle: " << bbox.x << " " << bbox.y << " "
-              << bbox.w << " " << bbox.h << '\n';
-  }
-  return 0;
-  */
 
   // tilemap
   tilemap = Tilemap(renderer);
@@ -201,10 +204,11 @@ int main() {
   coins = Coins(renderer, positions_coins);
   enemies = Enemies(renderer, patrol_trajectories);
 
-  // load font
+  // load font used to show score
   const std::string path_font = "/usr/share/fonts/noto/NotoSerif-Regular.ttf";
   const int FONT_SIZE = 24;
   font = TTF_OpenFont(path_font.c_str(), FONT_SIZE);
+  text = Text(font, renderer);
 
   // load music & sounds
   Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048);
@@ -220,10 +224,6 @@ int main() {
     std::cout << "Error loading music file: " << Mix_GetError() << '\n';
     return 1;
   }
-
-  // fps text
-  fps = FPS(font, renderer);
-  fps.start_timer();
 
   // game loop
   #ifdef __EMSCRIPTEN__

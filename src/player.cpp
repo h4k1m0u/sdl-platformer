@@ -30,6 +30,7 @@ Player::Player(SDL_Renderer* renderer, const std::vector<SDL_Rect>& bboxes_groun
   m_position_clip({ 0, 0 }),
   m_velocity_x(0),
   m_velocity_y(0),
+  m_n_lives(Constants::N_LIVES),
   m_direction(Direction::NONE),
   m_bbox({ m_position.x, m_position.y, WIDTH, HEIGHT })
 {
@@ -129,7 +130,7 @@ Collision::Sides Player::check_collision_ground(SDL_Point& point_contact) {
 /**
  * @return key Key corresp. to coin/enemy to destroy
  */
-bool Player::check_collision_entities(const std::unordered_map<int, SDL_Rect>& bboxes_entities, int& key) {
+bool Player::check_collision_entities(const BboxesMap& bboxes_entities, int& key) {
   bool collides = false;
   key = -1;
 
@@ -140,6 +141,18 @@ bool Player::check_collision_entities(const std::unordered_map<int, SDL_Rect>& b
       key = k;
       break;
     }
+  }
+
+  return collides;
+}
+
+/* Collided enemy will only be destroyed if hit on player's downward movement */
+bool Player::check_collision_enemies(const BboxesMap& bboxes_entities, int& key, bool& kill_enemy) {
+  bool collides = check_collision_entities(bboxes_entities, key);
+  if (collides) {
+    kill_enemy = m_velocity_y > 0;
+    if (!kill_enemy)
+      m_n_lives--;
   }
 
   return collides;
@@ -226,6 +239,14 @@ void Player::render(int frame, const SDL_Rect& camera) {
 SDL_Point Player::get_center() const {
   SDL_Point center = { m_position.x + WIDTH / 2, m_position.y + HEIGHT / 2 };
   return center;
+}
+
+int Player::get_n_lives() const {
+  return m_n_lives;
+}
+
+bool Player::is_alive() const {
+  return m_n_lives > 0;
 }
 
 void Player::free() {

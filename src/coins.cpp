@@ -28,7 +28,7 @@ void Coins::calculate_positions_clips() {
   }
 }
 
-const std::unordered_map<int, SDL_Rect>& Coins::get_bboxes() const {
+const BboxesMap& Coins::get_bboxes() const {
   return m_bboxes;
 }
 

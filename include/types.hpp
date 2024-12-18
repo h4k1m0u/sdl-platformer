@@ -18,4 +18,6 @@ using Frames = std::array<SDL_Point, N_FRAMES>;
 template <int N_FRAMES>
 using Clips = std::unordered_map<Direction, Frames<N_FRAMES>>;
 
+using BboxesMap = std::unordered_map<int, SDL_Rect>;
+
 #endif

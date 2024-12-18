@@ -1,9 +1,8 @@
-#include <array>
-
 #include "enemies.hpp"
 #include "constants.hpp"
 #include "direction.hpp"
 #include "drawer.hpp"
+#include "types.hpp"
 
 const std::string PATH_TEXTURE = "./assets/zombie.png";
 
@@ -49,7 +48,7 @@ void Enemies::calculate_positions_clips() {
   }
 }
 
-const std::unordered_map<int, SDL_Rect>& Enemies::get_bboxes() const {
+const BboxesMap& Enemies::get_bboxes() const {
   return m_bboxes;
 }
 
