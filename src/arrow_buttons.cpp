@@ -54,7 +54,7 @@ void ArrowButtons::reset_all() {
   }
 }
 
-void ArrowButtons::handle_mouse_event(const SDL_Event& e) {
+void ArrowButtons::handle_mouse_events(const SDL_Event& e) {
   if (e.button.button != SDL_BUTTON_LEFT)
     return;
 
@@ -79,7 +79,7 @@ void ArrowButtons::reset_by_finger(SDL_FingerID finger_id) {
   m_fingers.erase(finger_id);
 }
 
-void ArrowButtons::handle_touch_event(const SDL_Event& e) {
+void ArrowButtons::handle_touch_events(const SDL_Event& e) {
   if (e.type == SDL_FINGERUP) {
     // only reset the finger that was released
     reset_by_finger(e.tfinger.fingerId);
@@ -118,15 +118,15 @@ void ArrowButtons::handle_touch_event(const SDL_Event& e) {
 }
 
 /* Handles both mouse clicks & mobile touch events */
-void ArrowButtons::handle_event(const SDL_Event& e) {
+void ArrowButtons::handle_events(const SDL_Event& e) {
   bool is_mouse_event = e.type == SDL_MOUSEBUTTONDOWN || e.type == SDL_MOUSEBUTTONUP;
   bool is_touch_event = e.type == SDL_FINGERUP || e.type == SDL_FINGERDOWN;
 
   if (is_mouse_event) {
-    handle_mouse_event(e);
+    handle_mouse_events(e);
   }
   else if (is_touch_event) {
-    handle_touch_event(e);
+    handle_touch_events(e);
   }
 }
 

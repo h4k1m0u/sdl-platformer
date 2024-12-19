@@ -8,6 +8,7 @@
 #include "texture.hpp"
 #include "button.hpp"
 #include "types.hpp"
+#include "timer_cooldown.hpp"
 
 class Player {
 private:
@@ -33,13 +34,13 @@ private:
 public:
   Player() = default;
   Player(SDL_Renderer* renderer, const std::vector<SDL_Rect>& bboxes_ground);
-  void handle_event(const Uint8* key_states, const std::unordered_map<Button, bool>& clicked);
+  void handle_events(const Uint8* key_states, const std::unordered_map<Button, bool>& clicked);
   void render(int frame, const SDL_Rect& camera);
   void free();
 
   Collision::Sides check_collision_ground(SDL_Point& point_contact);
   bool check_collision_entities(const BboxesMap& bboxes_entities, int& key);
-  bool check_collision_enemies(const BboxesMap& bboxes_entities, int& key, bool& kill_enemy);
+  bool check_collision_enemies(const BboxesMap& bboxes_enemies, const std::unordered_map<int, TimerCooldown>& timers_enemies, int& key, bool& kill_enemy);
 
   void jump();
   void fall();

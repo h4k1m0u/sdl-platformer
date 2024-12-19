@@ -2,6 +2,9 @@
 # Tutorial: https://makefiletutorial.com/#makefile-cookbook
 # Automatic makefile dependencies: https://sparkyandsusi.wordpress.com/2016/11/26/automatic-makefile-dependencies/
 
+# Only one recipe/target (only one rule has a recipe, other rules have only prerequisites)
+# https://www.gnu.org/software/make/manual/make.html#Multiple-Rules
+
 SRC_DIR := src
 INCLUDE_DIR := include
 BUILD_DIR := build
@@ -29,7 +32,8 @@ LDFLAGS := -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer
 $(BUILD_DIR)/main: $(OBJECTS_FILES)
 	$(CXX) $(LDFLAGS) -o$@ $^
 
-# initial build & generate deps files
+# compile target & generate deps files each time
+# for subsequent builds, adds prerequistes from *.d files to rule (& runs same recipe)
 # separate translation units to compile them in parallel (faster)
 # Order-only prerequisites (right of pipe) won't run rule if dependency timestamp updated (i.e. run only once)
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp | $(BUILD_DIR)

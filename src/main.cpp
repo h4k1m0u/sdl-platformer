@@ -68,87 +68,10 @@ static void quit_game() {
   #endif
 }
 
-static void main_loop() {
-  static int frame = 0;
-  static int score = 0;
-
-  if (!player.is_alive()) {
-    quit_game();
-  }
-
-  /********** Physics **********/
-  // collision detection between player & ground tiles
-  SDL_Point point_contact;
-  auto [ side_x, side_y ] = player.check_collision_ground(point_contact);
-  bool is_on_ground = (side_y == Collision::SideY::ABOVE);
-
-  // collision with coins
-  int key_coin;
-  const BboxesMap& bboxes_coins = coins.get_bboxes();
-  bool collides_coin = player.check_collision_entities(bboxes_coins, key_coin);
-
-  if (collides_coin) {
-    coins.destroy(key_coin);
-    score++;
-    text.set_score(score);
-    std::cout << "Collides with coin " << key_coin << " - Score: " << score << '\n';
-  }
-
-  // collision with enemies
-  int key_enemy;
-  const BboxesMap& bboxes_enemies = enemies.get_bboxes();
-  bool kill_enemy;
-  bool collides_enemy = player.check_collision_enemies(bboxes_enemies, key_enemy, kill_enemy);
-
-  if (collides_enemy) {
-    std::cout << "Collides with enemy " << key_enemy << " kill_enemy: " << kill_enemy << '\n';
-
-    if (kill_enemy) {
-      enemies.destroy(key_enemy);
-    } else {
-      int n_lives = player.get_n_lives();
-      text.set_lives(n_lives);
-    }
-  }
-
-  // std::cout << frame << " main loop(): " << "on_ground: " << is_on_ground << " point_contact.y: " << point_contact.y << '\n';
-
-  /********** Input events **********/
-  // process even queue once every frame
-  SDL_Event e;
-
-  while (SDL_PollEvent(&e)) {
-    if (e.type == SDL_QUIT || (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)) {
-      quit_game();
-    }
-    else if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_SPACE) {
-      Mix_PlayChannel(-1, sound, 0);
-    }
-    else if (e.type == SDL_MOUSEBUTTONDOWN || e.type == SDL_MOUSEBUTTONUP ||
-             e.type == SDL_FINGERDOWN || e.type == SDL_FINGERUP) {
-      arrow_buttons.handle_event(e);
-    }
-  }
-
-  if (is_on_ground) {
-    const Uint8* keys_states = SDL_GetKeyboardState(NULL);
-    const std::unordered_map<Button, bool>& clicked = arrow_buttons.get_clicked();
-    player.handle_event(keys_states, clicked);
-  } else {
-    player.fall();
-  }
-
-  /********** Rendering **********/
-  // camera follows player (centered around it)
-  SDL_Point center_player = player.get_center();
-  camera.x = std::clamp(center_player.x - Constants::SCREEN_WIDTH/2, 0, Constants::LEVEL_WIDTH - Constants::SCREEN_WIDTH);
-  camera.y = std::clamp(center_player.y - Constants::SCREEN_HEIGHT/2, 0, Constants::LEVEL_HEIGHT - Constants::SCREEN_HEIGHT);
-
-  // std::cout << frame << " camera: " << camera.x << " " << camera.y << '\n';
-
-  // TODO: too many calls to player.check_collision_ground() ???
-  // TODO: player.move() ???
-
+/**
+ * @param frame Used to keep track of frame to show (for animated sprites)
+ */
+static void render(int frame) {
   // clear window
   SDL_SetRenderDrawColor(renderer, 0xff, 0xff, 0xff, 0xff);
   SDL_RenderClear(renderer);
@@ -161,6 +84,103 @@ static void main_loop() {
   text.render();
 
   SDL_RenderPresent(renderer);
+}
+
+/* Process even queue once every frame */
+static void handle_events(bool is_on_ground) {
+  SDL_Event e;
+
+  while (SDL_PollEvent(&e)) {
+    if (e.type == SDL_QUIT || (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)) {
+      quit_game();
+    }
+    else if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_SPACE) {
+      Mix_PlayChannel(-1, sound, 0);
+    }
+    else if (e.type == SDL_MOUSEBUTTONDOWN || e.type == SDL_MOUSEBUTTONUP ||
+             e.type == SDL_FINGERDOWN || e.type == SDL_FINGERUP) {
+      arrow_buttons.handle_events(e);
+    }
+  }
+
+  if (is_on_ground) {
+    const Uint8* keys_states = SDL_GetKeyboardState(NULL);
+    const std::unordered_map<Button, bool>& clicked = arrow_buttons.get_clicked();
+    player.handle_events(keys_states, clicked);
+  } else {
+    player.fall();
+  }
+
+  // camera follows player (centered around it)
+  SDL_Point center_player = player.get_center();
+  camera.x = std::clamp(center_player.x - Constants::SCREEN_WIDTH/2, 0, Constants::LEVEL_WIDTH - Constants::SCREEN_WIDTH);
+  camera.y = std::clamp(center_player.y - Constants::SCREEN_HEIGHT/2, 0, Constants::LEVEL_HEIGHT - Constants::SCREEN_HEIGHT);
+}
+
+/* Detect collision between player & ground tiles */
+static bool detect_collision_ground() {
+  SDL_Point point_contact;
+  auto [ side_x, side_y ] = player.check_collision_ground(point_contact);
+  bool is_on_ground = (side_y == Collision::SideY::ABOVE);
+  return is_on_ground;
+}
+
+/* Detect collision with coins */
+static void detect_collision_coins(int& score) {
+  int key_coin;
+  const BboxesMap& bboxes_coins = coins.get_bboxes();
+  bool collides_coin = player.check_collision_entities(bboxes_coins, key_coin);
+
+  if (collides_coin) {
+    coins.destroy(key_coin);
+    score++;
+    text.set_score(score);
+    std::cout << "Collides with coin " << key_coin << " - Score: " << score << '\n';
+  }
+}
+
+/* Detect collision with enemies */
+static void detect_collision_enemies() {
+  int key_enemy;
+  const BboxesMap& bboxes_enemies = enemies.get_bboxes();
+  const std::unordered_map<int, TimerCooldown>& timers_enemies = enemies.get_timers();
+  bool kill_enemy;
+  bool collides_enemy = player.check_collision_enemies(bboxes_enemies, timers_enemies, key_enemy, kill_enemy);
+  if (!collides_enemy)
+    return;
+
+  std::cout << "Collides with enemy " << key_enemy << " kill_enemy: " << kill_enemy << " lives: " << player.get_n_lives() << '\n';
+
+  enemies.stop_cooldown_timer(key_enemy);
+
+  if (kill_enemy) {
+    enemies.destroy(key_enemy);
+  } else {
+    int n_lives = player.get_n_lives();
+    text.set_lives(n_lives);
+    enemies.start_cooldown_timer(key_enemy);
+  }
+}
+
+static void main_loop() {
+  static int frame = 0;
+  static int score = 0;
+
+  if (!player.is_alive()) {
+    quit_game();
+  }
+
+  /********** Physics **********/
+  bool is_on_ground = detect_collision_ground();
+  detect_collision_coins(score);
+  detect_collision_enemies();
+
+  /********** Input events **********/
+  handle_events(is_on_ground);
+  // TODO: too many calls to player.check_collision_ground() ???
+
+  /********** Rendering **********/
+  render(frame);
   frame++;
 }
 

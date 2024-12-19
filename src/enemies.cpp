@@ -18,19 +18,39 @@ Enemies::Enemies(SDL_Renderer* renderer, const std::vector<PatrolTrajectory>& pa
   m_directions(m_n_enemies, Direction::RIGHT),
   m_velocities_x(m_n_enemies, SPEED)
 {
-  calculate_bboxes(patrol_trajectories);
+  calculate_bboxes();
   calculate_positions_clips();
+  set_timers_cooldown();
 }
 
-void Enemies::calculate_bboxes(const std::vector<PatrolTrajectory>& patrol_trajectories) {
+void Enemies::calculate_bboxes() {
   // shift sprite up as its height > height tile
   int delta_y = HEIGHT_ENEMY - Constants::HEIGHT_TILE;
 
   for (size_t key = 0; key < m_n_enemies; ++key) {
-    auto [ position_start, position_end ] = patrol_trajectories[key];
+    auto [ position_start, position_end ] = m_patrol_trajectories[key];
     SDL_Point position = { position_start.x, position_start.y - delta_y };
     m_bboxes[key] = { position.x, position.y, WIDTH_ENEMY, HEIGHT_ENEMY };
   }
+}
+
+/* Used to avoid detecting collision with player each frame (& kill latter immediately) */
+void Enemies::set_timers_cooldown() {
+  for (size_t key = 0; key < m_n_enemies; ++key) {
+    m_timers_cooldown[key];
+  }
+}
+
+void Enemies::start_cooldown_timer(int key) {
+  m_timers_cooldown[key].start();
+}
+
+void Enemies::stop_cooldown_timer(int key) {
+  m_timers_cooldown[key].stop();
+}
+
+bool Enemies::is_cool(int key) {
+  return m_timers_cooldown[key].is_cool();
 }
 
 void Enemies::calculate_positions_clips() {
@@ -50,6 +70,11 @@ void Enemies::calculate_positions_clips() {
 
 const BboxesMap& Enemies::get_bboxes() const {
   return m_bboxes;
+}
+
+/* Returned as a ref. (not const ref.) since timer is modified in player class */
+const std::unordered_map<int, TimerCooldown>& Enemies::get_timers() const {
+  return m_timers_cooldown;
 }
 
 /* hashmaps have constant-time complexity for removal (linear for vectors) */

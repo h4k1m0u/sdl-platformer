@@ -74,8 +74,8 @@ void Player::move_right() {
  * @param key_states Smoother results with keystates: move as long as key pressed (like joystick). SDL_KEYDOWN/UP better for puncutual events like firing a bullet (typing keyboard)
  * @param clicked Player can react to a click/touch on an arrow button
  */
-void Player::handle_event(const Uint8* key_states, const std::unordered_map<Button, bool>& clicked) {
-  // std::cout << "handle_event(): " << "m_velocity_y: " << m_velocity_y << '\n';
+void Player::handle_events(const Uint8* key_states, const std::unordered_map<Button, bool>& clicked) {
+  // std::cout << "handle_events(): " << "m_velocity_y: " << m_velocity_y << '\n';
   std::string keys = "";
 
   m_direction = Direction::NONE;
@@ -147,9 +147,14 @@ bool Player::check_collision_entities(const BboxesMap& bboxes_entities, int& key
 }
 
 /* Collided enemy will only be destroyed if hit on player's downward movement */
-bool Player::check_collision_enemies(const BboxesMap& bboxes_entities, int& key, bool& kill_enemy) {
+bool Player::check_collision_enemies(const BboxesMap& bboxes_entities, const std::unordered_map<int, TimerCooldown>& timers_enemies, int& key, bool& kill_enemy) {
   bool collides = check_collision_entities(bboxes_entities, key);
+
   if (collides) {
+    // prevent multiple successive collisions (drains player lives)
+    if (!timers_enemies.at(key).is_cool())
+      return false;
+
     kill_enemy = m_velocity_y > 0;
     if (!kill_enemy)
       m_n_lives--;
