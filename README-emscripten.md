@@ -6,7 +6,7 @@ $ source <emsdk-dir>/emsdk_env.sh
 $ cd <sdl-project>
 $ mkdir build-emscripten && cd build-emscripten 
 $ cp -r assets/ build-emscripten/
-$ emcc -I../include ../src/* -s USE_SDL=2 -s USE_SDL_TTF=2 -s USE_SDL_IMAGE=2 -s SDL2_IMAGE_FORMATS=[png] -s USE_SDL_MIXER=2 -s SDL2_MIXER_FORMATS=[mp3] --preload-file assets -o index.html
+$ emcc -std=c++20 -I../include ../src/* -s USE_SDL=2 -s USE_SDL_TTF=2 -s USE_SDL_IMAGE=2 -s SDL2_IMAGE_FORMATS=[png] -s USE_SDL_MIXER=2 -s SDL2_MIXER_FORMATS=[mp3] --preload-file assets -o index.html
 ```
 
 # How to run

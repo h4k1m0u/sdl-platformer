@@ -89,8 +89,8 @@ void ArrowButtons::handle_touch_events(const SDL_Event& e) {
   // find fingers positions & ids
   SDL_TouchID touch_id = e.tfinger.touchId;
   int n_fingers = SDL_GetNumTouchFingers(touch_id);
-  SDL_Point fingers_positions[n_fingers];
-  SDL_FingerID fingers_ids[n_fingers];
+  std::vector<SDL_Point> fingers_positions(n_fingers);
+  std::vector<SDL_FingerID> fingers_ids(n_fingers);
 
   for (int i = 0; i < n_fingers; ++i) {
     SDL_Finger* finger = SDL_GetTouchFinger(touch_id, i);

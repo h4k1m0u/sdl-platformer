@@ -5,7 +5,7 @@ const SDL_Point POSITION_SCORE = { 0, 0 };
 
 Text::Text(TTF_Font* font, SDL_Renderer* renderer):
   m_font(font),
-  m_texture_score(font, "FPS: 0", renderer),
+  m_texture_score(font, "Score: 0", renderer),
   m_texture_lives(font, "Lives: " + std::to_string(Constants::N_LIVES), renderer)
 {
 }
