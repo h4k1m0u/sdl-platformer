@@ -10,7 +10,6 @@ INCLUDE_DIR := include
 BUILD_DIR := build
 
 SRC_FILES := $(shell find $(SRC_DIR) -name "*.cpp")
-HEADER_FILES := $(shell find $(INCLUDE_DIR) -name "*.hpp")
 OBJECTS_FILES := $(SRC_FILES:$(SRC_DIR)/%.cpp=$(BUILD_DIR)/%.o)
 DEPS_FILES := $(OBJECTS_FILES:.o=.d)
 

@@ -1,3 +1,6 @@
+# Screenshot
+![Screenshot](/screenshots/screenshot.png)
+
 # How to build
 ```bash
 $ make -j  # build the executable
