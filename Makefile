@@ -29,7 +29,7 @@ LDFLAGS := -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer
 
 # separate compilation from linking to recompile only modified file
 $(BUILD_DIR)/main: $(OBJECTS_FILES)
-	$(CXX) $(LDFLAGS) -o$@ $^
+	$(CXX) $^ -o$@ $(LDFLAGS)
 
 # compile target & generate deps files each time
 # for subsequent builds, adds prerequistes from *.d files to rule (& runs same recipe)

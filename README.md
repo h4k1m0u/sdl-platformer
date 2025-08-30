@@ -9,7 +9,8 @@ $ make build/assets  # copy the assets
 
 # Dependencies
 ```bash
-$ pacman -Sy sdl2 sdl2_image sdl2_ttf sdl2_mixer
+$ pacman -Sy sdl2 sdl2_image sdl2_ttf sdl2_mixer  # on archlinux
+$ sudo apt install libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer-dev  # on ubuntu
 ```
 
 # Assets
